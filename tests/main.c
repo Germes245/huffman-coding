@@ -16,17 +16,14 @@ void count_frequency(uint64_t *hash_table_for_frequency_of_symbols, uint8_t *arr
 }
 
 void sort_indexes(uint8_t indexes[], uint64_t hash_table_for_frequency_of_symbols[]){
-    uint8_t i = 0;
-    while (i < 256 - 1) {
-        uint8_t j = i;
-        while (1) {
-            //if(hash_table_for_frequency_of_symbols[j] > array[j+1])
-            printf("i = %d, j = %d\n", i, j);
-            if(j == 254) break;
-            j++;
+    for(size_t i = 0; i < 255; i++){
+        for(size_t j = 0; j < 255-i-1; j++){
+            if(hash_table_for_frequency_of_symbols[indexes[j]] > hash_table_for_frequency_of_symbols[indexes[j+1]]){
+                uint8_t temp = indexes[j+1];
+                indexes[j+1] = indexes[j];
+                indexes[j] = temp;
+            }
         }
-        //if() break;
-        i++;
     }
 }
 
