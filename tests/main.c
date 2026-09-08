@@ -22,10 +22,10 @@ void sort_indexes(uint8_t indexes[], uint64_t hash_table_for_frequency_of_symbol
         while (1) {
             //if(hash_table_for_frequency_of_symbols[j] > array[j+1])
             printf("i = %d, j = %d\n", i, j);
-            if(j == 254) break;
+            if(j == 255) break;
             j++;
         }
-        if(i == 254) break;
+        if(i == 255) break;
         i++;
     }
 }
