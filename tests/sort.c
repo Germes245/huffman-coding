@@ -13,3 +13,11 @@ void _1byte_buble_sort(uint8_t array[], size_t length){ // length -- длина 
         }
     }
 }
+
+int main(){
+    uint8_t array[] = {255, 200, 100};
+    _1byte_buble_sort(array, sizeof(array)/sizeof(array[0]));
+    for(size_t i = 0; i < sizeof(array)/sizeof(array[0]); i++){
+        printf("%d\n", array[i]);
+    }
+}
