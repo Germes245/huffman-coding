@@ -16,9 +16,10 @@ void count_frequency(uint64_t *hash_table_for_frequency_of_symbols, uint8_t *arr
 }
 
 void sort_indexes(uint8_t indexes[], uint64_t hash_table_for_frequency_of_symbols[]){
-    for(size_t i = 0; i < 255; i++){
-        for(size_t j = 0; j < 255-i-1; j++){
+    for(size_t i = 0; i < 256; i++){
+        for(size_t j = 0; j < 256-i-1; j++){
             if(hash_table_for_frequency_of_symbols[indexes[j]] > hash_table_for_frequency_of_symbols[indexes[j+1]]){
+                printf("%d\n", j);
                 uint8_t temp = indexes[j+1];
                 indexes[j+1] = indexes[j];
                 indexes[j] = temp;
@@ -50,12 +51,12 @@ int main(){
     // конец чтения файла
 
     // подсчёт частотности символов
-    uint64_t hash_table_for_frequency_of_symbols[255] = {0}; // символы здесь это числа в одном байте данных, которые бывают от 0 до 2^8 - 1 включительно
+    uint64_t hash_table_for_frequency_of_symbols[256] = {0}; // символы здесь это числа в одном байте данных, которые бывают от 0 до 2^8 - 1 включительно
     count_frequency(hash_table_for_frequency_of_symbols, buffer, length_of_buffer);
 
-    for(size_t i = 0; i < 255; i++){
+    /*for(size_t i = 0; i < 255; i++){
         printf("%d: %d\n", i, hash_table_for_frequency_of_symbols[i]);
-    }
+    }*/
 
     uint8_t indexes[256];
     uint8_t i = 0;
@@ -67,5 +68,9 @@ int main(){
     }
 
     sort_indexes(indexes, hash_table_for_frequency_of_symbols);
+
+    for(size_t i = 0; i < 256; i++){
+        printf("%d, value = %d\n", indexes[i], hash_table_for_frequency_of_symbols[indexes[i]]);
+    }
     
 }
