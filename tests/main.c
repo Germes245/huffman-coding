@@ -16,8 +16,9 @@ void count_frequency(uint64_t *hash_table_for_frequency_of_symbols, uint8_t *arr
 }
 
 void sort_indexes(uint8_t indexes[], uint64_t hash_table_for_frequency_of_symbols[]){
+    uint8_t index_of_y
     for(size_t i = 0; i < 256; i++){
-        for(size_t j = 0; j < 256-i-1; j++){
+        for(size_t j = 0; j < 256-i-1; j++){ // возможно что последний нуль будет на 244 индексе
             if(hash_table_for_frequency_of_symbols[indexes[j]] > hash_table_for_frequency_of_symbols[indexes[j+1]]){
                 printf("j = %ld, left = %ld, right = %ld\n", j, hash_table_for_frequency_of_symbols[indexes[j]], hash_table_for_frequency_of_symbols[indexes[j+1]]);
                 uint8_t temp = indexes[j+1];
@@ -25,7 +26,7 @@ void sort_indexes(uint8_t indexes[], uint64_t hash_table_for_frequency_of_symbol
                 indexes[j] = temp;
             }
         }
-        debug:
+        getchar();
     }
 }
 
@@ -71,7 +72,7 @@ int main(){
     sort_indexes(indexes, hash_table_for_frequency_of_symbols);
 
     for(size_t i = 0; i < 256; i++){
-        printf("%d, value = %d\n", indexes[i], hash_table_for_frequency_of_symbols[indexes[i]]);
+        printf("i = %d, in index array: %d, value = %ld\n", i, indexes[i], hash_table_for_frequency_of_symbols[indexes[i]]);
     }
     
 }
