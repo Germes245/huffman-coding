@@ -44,7 +44,10 @@ typedef struct huffman_node {
 } huffman_node;
 
 huffman_node build_huffman_tree(uint8_t *array_of_frequences, uint8_t length){ // length -- длина array_of_frequences, и из за ограничения одного байта для числа, настоящая длина будет вычисляться как length + 1
+    printf("%d\n", length);
+    for (uint8_t i = 0; condition; inc-expression) {
     
+    }
 }
 
 int main(){
@@ -88,11 +91,11 @@ int main(){
 
     uint8_t index_of_last_zero = HE_sort_indexes(indexes, hash_table_for_frequency_of_symbols);
 
-    for(size_t i = index_of_last_zero; i < 256; i++){
+    /*for(size_t i = index_of_last_zero; i < 256; i++){
         printf("i = %d, in index array: %d, value = %ld\n", i, indexes[i], hash_table_for_frequency_of_symbols[indexes[i]]);
-    }
+    }*/
 
     // начало создания кодов
 
-    huffman_node root = build_huffman_tree();
+    huffman_node root = build_huffman_tree(indexes + index_of_last_zero, -index_of_last_zero);
 }
