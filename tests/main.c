@@ -2,6 +2,7 @@
 #include <stddef.h>
 #include <stdio.h>
 //#include <bool.h>
+#include <stdlib.h>
 #include <sys/stat.h>
 
 #define length_of_buffer file_info.st_size
@@ -43,11 +44,24 @@ typedef struct huffman_node {
     uint8_t is_leaf;              // 1, если это лист
 } huffman_node;
 
-huffman_node build_huffman_tree(uint8_t *array_of_frequences, uint8_t length){ // length -- длина array_of_frequences, и из за ограничения одного байта для числа, настоящая длина будет вычисляться как length + 1
-    printf("%d\n", length);
-    for (uint8_t i = 0; condition; inc-expression) {
-    
+huffman_node build_huffman_tree(uint64_t hash_table_for_frequency_of_symbols[], uint8_t *array_of_frequences, uint8_t index_of_last_zero){
+    //printf("%ld\n", -index_of_last_zero);
+    uint16_t length = 255 - index_of_last_zero;
+    huffman_node *leafs = malloc(sizeof(huffman_node)*(length));
+    if(!leafs){
+        perror("недостаточно памяти в ОЗУ\n");
+        exit(1);
     }
+    uint8_t i = index_of_last_zero, j = 0;
+    do{
+        i++;
+        leafs[j].is_leaf = 1;
+        leafs[j].frequency = hash_table_for_frequency_of_symbols[array_of_frequences[i]];
+        leafs[j].symbol = array_of_frequences[i];
+        printf("индекс для массива индексов: %d, индекс в массиве индексов: %d, частота символов: %d\n", i, array_of_frequences[i], hash_table_for_frequency_of_symbols[array_of_frequences[i]]);
+        j++;
+    } while(i != 255);
+
 }
 
 int main(){
@@ -97,5 +111,5 @@ int main(){
 
     // начало создания кодов
 
-    huffman_node root = build_huffman_tree(indexes + index_of_last_zero, -index_of_last_zero);
+    huffman_node root = build_huffman_tree(hash_table_for_frequency_of_symbols, indexes, index_of_last_zero);
 }
