@@ -6,6 +6,8 @@
 
 #define length_of_buffer file_info.st_size
 
+// HE -- Huffman Encodiung
+
 /*
  * подсчитывает частотность символов
 */
@@ -15,20 +17,32 @@ void count_frequency(uint64_t *hash_table_for_frequency_of_symbols, uint8_t *arr
     }
 }
 
-void sort_indexes(uint8_t indexes[], uint64_t hash_table_for_frequency_of_symbols[]){
-    uint8_t index_of_y
+uint8_t sort_indexes(uint8_t indexes[], uint64_t hash_table_for_frequency_of_symbols[]){
+    uint8_t index_of_last_zero;
     for(size_t i = 0; i < 256; i++){
         for(size_t j = 0; j < 256-i-1; j++){ // возможно что последний нуль будет на 244 индексе
             if(hash_table_for_frequency_of_symbols[indexes[j]] > hash_table_for_frequency_of_symbols[indexes[j+1]]){
-                printf("j = %ld, left = %ld, right = %ld\n", j, hash_table_for_frequency_of_symbols[indexes[j]], hash_table_for_frequency_of_symbols[indexes[j+1]]);
+                index_of_last_zero = j;
+                //printf("j = %ld, left = %ld, right = %ld\n", j, hash_table_for_frequency_of_symbols[indexes[j]], hash_table_for_frequency_of_symbols[indexes[j+1]]);
                 uint8_t temp = indexes[j+1];
                 indexes[j+1] = indexes[j];
                 indexes[j] = temp;
             }
         }
-        getchar();
+        //getchar();
     }
+    return index_of_last_zero;
 }
+
+typedef struct huffman_node {
+    uint8_t symbol;           // символ (если лист)
+    uint64_t frequency;       // частота (вес)
+    struct huffman_node *left;
+    struct huffman_node *right;
+    uint8_t is_leaf;              // 1, если это лист
+} huffman_node;
+
+huffman_node build_huffman_tree
 
 int main(){
     char* name_of_file = "input";
@@ -69,10 +83,11 @@ int main(){
         i++;
     }
 
-    sort_indexes(indexes, hash_table_for_frequency_of_symbols);
-
-    for(size_t i = 0; i < 256; i++){
+    for(size_t i = sort_indexes(indexes, hash_table_for_frequency_of_symbols); i < 256; i++){
         printf("i = %d, in index array: %d, value = %ld\n", i, indexes[i], hash_table_for_frequency_of_symbols[indexes[i]]);
     }
+
+    // начало создания кодов
+
     
 }
