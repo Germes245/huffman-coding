@@ -43,7 +43,7 @@ typedef struct huffman_node {
     uint8_t is_leaf;              // 1, если это лист
 } huffman_node;
 
-huffman_node build_huffman_tree(uint8_t *array_of_frequences, uint8_t length){ // length -- длина array_of_frequences, и из за оuраничения одного байта для числа, настоящая длина будет вычисляться как length + 1
+huffman_node build_huffman_tree(uint8_t *array_of_frequences, uint8_t length){ // length -- длина array_of_frequences, и из за ограничения одного байта для числа, настоящая длина будет вычисляться как length + 1
     
 }
 
