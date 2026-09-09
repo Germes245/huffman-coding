@@ -6,18 +6,19 @@
 
 #define length_of_buffer file_info.st_size
 
-// HE -- Huffman Encodiung
+// HE -- Huffman Encoding
 
 /*
  * подсчитывает частотность символов
+ * hash_table_for_frequency_of_symbols -- указатель на массив фиксированой длины в 256 элементов
 */
-void count_frequency(uint64_t *hash_table_for_frequency_of_symbols, uint8_t *array_of_symbols, size_t length_of_array_of_symbols){
+void HE_count_frequency(uint64_t *hash_table_for_frequency_of_symbols, uint8_t *array_of_symbols, size_t length_of_array_of_symbols){
     for(size_t i = 0; i < length_of_array_of_symbols; i++){
         hash_table_for_frequency_of_symbols[array_of_symbols[i]]++;
     }
 }
 
-uint8_t sort_indexes(uint8_t indexes[], uint64_t hash_table_for_frequency_of_symbols[]){
+uint8_t HE_sort_indexes(uint8_t indexes[], uint64_t hash_table_for_frequency_of_symbols[]){
     uint8_t index_of_last_zero;
     for(size_t i = 0; i < 256; i++){
         for(size_t j = 0; j < 256-i-1; j++){ // возможно что последний нуль будет на 244 индексе
@@ -42,7 +43,9 @@ typedef struct huffman_node {
     uint8_t is_leaf;              // 1, если это лист
 } huffman_node;
 
-huffman_node build_huffman_tree
+huffman_node build_huffman_tree(uint8_t *array_of_frequences, uint8_t length){ // length -- длина array_of_frequences, и из за ораничения одно байта для числа настоящая длина будет вычисляться как length + 1
+    
+}
 
 int main(){
     char* name_of_file = "input";
@@ -68,7 +71,7 @@ int main(){
 
     // подсчёт частотности символов
     uint64_t hash_table_for_frequency_of_symbols[256] = {0}; // символы здесь это числа в одном байте данных, которые бывают от 0 до 2^8 - 1 включительно
-    count_frequency(hash_table_for_frequency_of_symbols, buffer, length_of_buffer);
+    HE_count_frequency(hash_table_for_frequency_of_symbols, buffer, length_of_buffer);
 
     /*for(size_t i = 0; i < 255; i++){
         printf("%d: %d\n", i, hash_table_for_frequency_of_symbols[i]);
@@ -83,11 +86,13 @@ int main(){
         i++;
     }
 
-    for(size_t i = sort_indexes(indexes, hash_table_for_frequency_of_symbols); i < 256; i++){
+    uint8_t index_of_last_zero = HE_sort_indexes(indexes, hash_table_for_frequency_of_symbols);
+
+    for(size_t i = index_of_last_zero; i < 256; i++){
         printf("i = %d, in index array: %d, value = %ld\n", i, indexes[i], hash_table_for_frequency_of_symbols[indexes[i]]);
     }
 
     // начало создания кодов
 
-    
+    huffman_node root = build_huffman_tree();
 }
