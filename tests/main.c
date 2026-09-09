@@ -19,12 +19,13 @@ void sort_indexes(uint8_t indexes[], uint64_t hash_table_for_frequency_of_symbol
     for(size_t i = 0; i < 256; i++){
         for(size_t j = 0; j < 256-i-1; j++){
             if(hash_table_for_frequency_of_symbols[indexes[j]] > hash_table_for_frequency_of_symbols[indexes[j+1]]){
-                printf("%d\n", j);
+                printf("j = %ld, left = %ld, right = %ld\n", j, hash_table_for_frequency_of_symbols[indexes[j]], hash_table_for_frequency_of_symbols[indexes[j+1]]);
                 uint8_t temp = indexes[j+1];
                 indexes[j+1] = indexes[j];
                 indexes[j] = temp;
             }
         }
+        debug:
     }
 }
 
