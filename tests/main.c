@@ -54,8 +54,8 @@ huffman_node build_huffman_tree(uint8_t pointers_for_numbers_in_hash_table_for_f
         huffman_node alone_leaf;
         alone_leaf.is_leaf=1;
         uint8_t i = index_of_last_zero+1;
-        alone_leaf.frequency = hash_table_for_frequency_of_symbols[pointers_for_numbers_in_hash_table_for_frequency_of_symbols[i]];
-        //alone_leaf.symbol = array_of_frequences[i];
+        alone_leaf.symbol = pointers_for_numbers_in_hash_table_for_frequency_of_symbols[i];
+        alone_leaf.frequency = array_of_frequences[alone_leaf.symbol];
         return alone_leaf;
     }
     /*
