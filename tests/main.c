@@ -39,11 +39,14 @@ uint8_t HE_sort_indexes(uint8_t indexes[], uint64_t hash_table_for_frequency_of_
 /*
  * дерево строится так что в *left указывается текущий лист, а в *rigth указывается следующая ветвь листов
  * можно представить так:
-(A)    (B)   (C)
-  \    /     /
-   (AB)     /
-     \     /
-      (ABC)
+(A)    (B)   (C)    (D)
+  \    /     /      /
+   (AB)     /      /
+     \     /      /
+      (ABC)      /
+         \      /
+          (ABCD)
+ФИСВ
 */
 typedef struct huffman_node {
     uint8_t symbol;           // символ (если лист)
@@ -92,8 +95,17 @@ huffman_node* build_huffman_tree(uint8_t pointers_for_numbers_in_hash_table_for_
 
         huffman_node *new_node;
         if(length > 2){
-            for(; i < 256; i++){
+            i++;
+            while(i < 256){
+                huffman_node *rigth = malloc(sizeof(huffman_node));
+                rigth->is_leaf = 1;
+                rigth->symbol = pointers_for_numbers_in_hash_table_for_frequency_of_symbols[i];
+                rigth->frequency = array_of_frequences[rigth->symbol];
+
+                new_node = malloc(sizeof(huffman_node));
+                new_node->is_leaf = 0;
                 
+                i++;
             }
         }
         return first_node;
