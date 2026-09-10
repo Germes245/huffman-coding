@@ -44,6 +44,9 @@ typedef struct huffman_node {
     uint8_t is_leaf;              // 1, если это лист
 } huffman_node;
 
+/*
+ * @param index_of_last_zero -- индекс для массива hash_table_for_frequency_of_symbols
+*/
 huffman_node build_huffman_tree(uint64_t hash_table_for_frequency_of_symbols[], uint8_t *array_of_frequences, uint8_t index_of_last_zero){
     uint16_t length = 255 - index_of_last_zero;
     
@@ -104,7 +107,7 @@ int main(){
         printf("%d: %d\n", i, hash_table_for_frequency_of_symbols[i]);
     }*/
 
-    uint8_t indexes[256]; // массив индексов на числа в 
+    uint8_t indexes[256]; // массив индексов, которые указывают адресс числа в массиве hash_table_for_frequency_of_symbols
     uint8_t i = 0;
 
     while(1){
@@ -121,5 +124,5 @@ int main(){
 
     // начало создания кодов
 
-    huffman_node root = build_huffman_tree(hash_table_for_frequency_of_symbols, indexes, index_of_last_zero);
+    huffman_node root = build_huffman_tree(indexes, indexes, index_of_last_zero);
 }
