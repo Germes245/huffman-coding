@@ -36,6 +36,11 @@ uint8_t HE_sort_indexes(uint8_t indexes[], uint64_t hash_table_for_frequency_of_
     return index_of_last_zero;
 }
 
+/*
+ * дерево строится так что в *left указывается текущий лист, а в *rigth указывается следующая ветвь листов
+ * можно представить так:
+ 
+*/
 typedef struct huffman_node {
     uint8_t symbol;           // символ (если лист)
     uint64_t frequency;       // частота (вес)
@@ -47,28 +52,41 @@ typedef struct huffman_node {
 /*
  * @param index_of_last_zero -- индекс для массива, который указывает на число в массиве pointers_for_numbers_in_hash_table_for_frequency_of_symbols, которое является последним указателем в pointers_for_numbers_in_hash_table_for_frequency_of_symbols, указывающее на число 0 в хэш-таблице частот символов
 */
-huffman_node build_huffman_tree(uint8_t pointers_for_numbers_in_hash_table_for_frequency_of_symbols[], uint64_t *array_of_frequences, uint8_t index_of_last_zero){
+huffman_node* build_huffman_tree(uint8_t pointers_for_numbers_in_hash_table_for_frequency_of_symbols[], uint64_t *array_of_frequences, uint16_t index_of_last_zero){
     uint16_t length = 255 - index_of_last_zero;
+    printf("%d\n", length);
+
+    for(size_t i = index_of_last_zero; i < 256; i++){
+        printf("i = %d, in index array: %d, value = %ld\n", i, pointers_for_numbers_in_hash_table_for_frequency_of_symbols[i], array_of_frequences[pointers_for_numbers_in_hash_table_for_frequency_of_symbols[i]]);
+    }
     
     if (length == 1) {
-        huffman_node alone_leaf;
-        alone_leaf.is_leaf=1;
+        huffman_node *alone_leaf = malloc(sizeof(huffman_node));
+        alone_leaf->is_leaf=1;
         uint8_t i = index_of_last_zero+1;
-        alone_leaf.symbol = pointers_for_numbers_in_hash_table_for_frequency_of_symbols[i];
-        alone_leaf.frequency = array_of_frequences[alone_leaf.symbol];
+        alone_leaf->symbol = pointers_for_numbers_in_hash_table_for_frequency_of_symbols[i];
+        alone_leaf->frequency = array_of_frequences[alone_leaf.symbol];
         return alone_leaf;
     }
-    /*
     if (length == 2){
         uint8_t i = index_of_last_zero+1;
         huffman_node *root = malloc(sizeof(huffman_node));
         huffman_node *left = malloc(sizeof(huffman_node));
         huffman_node *rigth = malloc(sizeof(huffman_node));
         left->is_leaf = 1;
-        left->frequency = hash_table_for_frequency_of_symbols[array_of_frequences[i]];
+        left->symbol = pointers_for_numbers_in_hash_table_for_frequency_of_symbols[i];
+        left->frequency = array_of_frequences[left->symbol];
+        i++;
+
         rigth->is_leaf = 1;
+        rigth->symbol = pointers_for_numbers_in_hash_table_for_frequency_of_symbols[i];
+        rigth->frequency = array_of_frequences[left->symbol];
+
         root->is_leaf = 0;
-    }*/
+        root->left = left;
+        root->right = rigth;
+        return root;
+    }
     /*uint8_t i = index_of_last_zero, j = 0;
     do{
         i++;
@@ -79,7 +97,7 @@ huffman_node build_huffman_tree(uint8_t pointers_for_numbers_in_hash_table_for_f
 }
 
 int main(){
-    char* name_of_file = "input";
+    char* name_of_file = "one letter.txt";
 
     // чтение файла
 
@@ -89,7 +107,7 @@ int main(){
         return 1;
     }
 
-    FILE *file = fopen("input", "rb");
+    FILE *file = fopen(name_of_file, "rb");
     if(!file){
         perror("ошибка открытия файла\n");
         return 1;
@@ -117,7 +135,7 @@ int main(){
         i++;
     }
 
-    uint8_t index_of_last_zero = HE_sort_indexes(indexes, hash_table_for_frequency_of_symbols);
+    uint16_t index_of_last_zero = HE_sort_indexes(indexes, hash_table_for_frequency_of_symbols);
 
     /*for(size_t i = index_of_last_zero; i < 256; i++){
         printf("i = %d, in index array: %d, value = %ld\n", i, indexes[i], hash_table_for_frequency_of_symbols[indexes[i]]);
@@ -125,5 +143,5 @@ int main(){
 
     // начало создания кодов
 
-    huffman_node root = build_huffman_tree(indexes, hash_table_for_frequency_of_symbols, index_of_last_zero);
+    huffman_node *root = build_huffman_tree(indexes, hash_table_for_frequency_of_symbols, index_of_last_zero);
 }
