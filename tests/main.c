@@ -61,20 +61,20 @@ huffman_node* build_huffman_tree(uint8_t pointers_for_numbers_in_hash_table_for_
     printf("%d\n", length);
 
     for(size_t i = index_of_last_zero; i < 256; i++){
-        printf("i = %d, in index array: %d, value = %ld\n", i, pointers_for_numbers_in_hash_table_for_frequency_of_symbols[i], array_of_frequences[pointers_for_numbers_in_hash_table_for_frequency_of_symbols[i]]);
+        printf("i = %ld, in index array: %d, value = %ld\n", i, pointers_for_numbers_in_hash_table_for_frequency_of_symbols[i], array_of_frequences[pointers_for_numbers_in_hash_table_for_frequency_of_symbols[i]]);
     }
+
+    uint16_t i = index_of_last_zero+1;
     
     if (length == 1) {
         huffman_node *alone_leaf = malloc(sizeof(huffman_node));
         alone_leaf->is_leaf=1;
-        uint8_t i = index_of_last_zero+1;
         alone_leaf->symbol = pointers_for_numbers_in_hash_table_for_frequency_of_symbols[i];
-        alone_leaf->frequency = array_of_frequences[alone_leaf.symbol];
+        alone_leaf->frequency = array_of_frequences[alone_leaf->symbol];
         return alone_leaf;
     }
-    if (length == 2){
-        uint8_t i = index_of_last_zero+1;
-        huffman_node *root = malloc(sizeof(huffman_node));
+    if (length >= 2){
+        huffman_node *first_node = malloc(sizeof(huffman_node));
         huffman_node *left = malloc(sizeof(huffman_node));
         huffman_node *rigth = malloc(sizeof(huffman_node));
         left->is_leaf = 1;
@@ -86,18 +86,18 @@ huffman_node* build_huffman_tree(uint8_t pointers_for_numbers_in_hash_table_for_
         rigth->symbol = pointers_for_numbers_in_hash_table_for_frequency_of_symbols[i];
         rigth->frequency = array_of_frequences[left->symbol];
 
-        root->is_leaf = 0;
-        root->left = left;
-        root->right = rigth;
-        return root;
+        first_node->is_leaf = 0;
+        first_node->left = left;
+        first_node->right = rigth;
+
+        huffman_node *new_node;
+        if(length > 2){
+            for(; i < 256; i++){
+                
+            }
+        }
+        return first_node;
     }
-    /*uint8_t i = index_of_last_zero, j = 0;
-    do{
-        i++;
-        
-        j++;
-    } while(i != 255);*/
-    
 }
 
 int main(){
