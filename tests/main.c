@@ -45,19 +45,20 @@ typedef struct huffman_node {
 } huffman_node;
 
 /*
- * @param index_of_last_zero -- индекс для массива hash_table_for_frequency_of_symbols
+ * @param index_of_last_zero -- индекс для массива, который указывает на число в массиве pointers_for_numbers_in_hash_table_for_frequency_of_symbols, которое является последним указателем в pointers_for_numbers_in_hash_table_for_frequency_of_symbols, указывающее на число 0 в хэш-таблице частот символов
 */
-huffman_node build_huffman_tree(uint64_t hash_table_for_frequency_of_symbols[], uint8_t *array_of_frequences, uint8_t index_of_last_zero){
+huffman_node build_huffman_tree(uint8_t pointers_for_numbers_in_hash_table_for_frequency_of_symbols[], uint64_t *array_of_frequences, uint8_t index_of_last_zero){
     uint16_t length = 255 - index_of_last_zero;
     
-    /*if (length == 1) {
+    if (length == 1) {
         huffman_node alone_leaf;
         alone_leaf.is_leaf=1;
         uint8_t i = index_of_last_zero+1;
-        alone_leaf.frequency = hash_table_for_frequency_of_symbols[array_of_frequences[i]];
-        alone_leaf.symbol = array_of_frequences[i];
+        alone_leaf.frequency = hash_table_for_frequency_of_symbols[pointers_for_numbers_in_hash_table_for_frequency_of_symbols[i]];
+        //alone_leaf.symbol = array_of_frequences[i];
         return alone_leaf;
     }
+    /*
     if (length == 2){
         uint8_t i = index_of_last_zero+1;
         huffman_node *root = malloc(sizeof(huffman_node));
@@ -124,5 +125,5 @@ int main(){
 
     // начало создания кодов
 
-    huffman_node root = build_huffman_tree(indexes, indexes, index_of_last_zero);
+    huffman_node root = build_huffman_tree(indexes, hash_table_for_frequency_of_symbols, index_of_last_zero);
 }
