@@ -64,19 +64,20 @@ huffman_node* build_huffman_tree(uint8_t pointers_for_numbers_in_hash_table_for_
 
     // создание листьев
 
-    /*for (uint16_t i = 0; i < 256; i++) {
-        printf("i: %d, pointers_for_numbers_in_hash_table_for_frequency_of_symbols: %d\n", i, pointers_for_numbers_in_hash_table_for_frequency_of_symbols[i]);
-    }*/
-
     huffman_node* huffman_node[length];
 
     uint8_t j = index_of_last_zero + 1;
     for (uint16_t i = 0; i < length; i++) {
-        printf("%d\n", pointers_for_numbers_in_hash_table_for_frequency_of_symbols[j]);
-        //putchar(1+pointers_for_numbers_in_hash_table_for_frequency_of_symbols[index_of_last_zero]);
-        //huffman_node[i] = malloc(sizeof(huffman_node));
+        //printf("%d\n", pointers_for_numbers_in_hash_table_for_frequency_of_symbols[j]);
+        //putchar(pointers_for_numbers_in_hash_table_for_frequency_of_symbols[j]);
+        huffman_node[i] = malloc(sizeof(huffman_node));
+        huffman_node[i]->is_leaf = 1;
+        huffman_node[i]->symbol = pointers_for_numbers_in_hash_table_for_frequency_of_symbols[j];
+        huffman_node[i]->frequency = array_of_frequences[huffman_node[i]->symbol];
         j++;
     }
+
+    // листья созданы, теперь строится 
 }
 
 int main(){
