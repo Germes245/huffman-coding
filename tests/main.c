@@ -60,54 +60,22 @@ typedef struct huffman_node {
 */
 huffman_node* build_huffman_tree(uint8_t pointers_for_numbers_in_hash_table_for_frequency_of_symbols[], uint64_t *array_of_frequences, uint16_t index_of_last_zero){
     uint16_t length = 255 - index_of_last_zero;
-    printf("%d\n", length);
+    //printf("%d\n", length);
 
-    for(size_t i = index_of_last_zero; i < 256; i++){
-        printf("i = %ld, in index array: %d, value = %ld\n", i, pointers_for_numbers_in_hash_table_for_frequency_of_symbols[i], array_of_frequences[pointers_for_numbers_in_hash_table_for_frequency_of_symbols[i]]);
-    }
+    // создание листьев
 
-    uint16_t i = index_of_last_zero+1;
-    
-    if (length == 1) {
-        huffman_node *alone_leaf = malloc(sizeof(huffman_node));
-        alone_leaf->is_leaf=1;
-        alone_leaf->symbol = pointers_for_numbers_in_hash_table_for_frequency_of_symbols[i];
-        alone_leaf->frequency = array_of_frequences[alone_leaf->symbol];
-        return alone_leaf;
-    }
-    if (length >= 2){
-        huffman_node *first_node = malloc(sizeof(huffman_node));
-        huffman_node *left = malloc(sizeof(huffman_node));
-        huffman_node *rigth = malloc(sizeof(huffman_node));
-        left->is_leaf = 1;
-        left->symbol = pointers_for_numbers_in_hash_table_for_frequency_of_symbols[i];
-        left->frequency = array_of_frequences[left->symbol];
-        i++;
+    /*for (uint16_t i = 0; i < 256; i++) {
+        printf("i: %d, pointers_for_numbers_in_hash_table_for_frequency_of_symbols: %d\n", i, pointers_for_numbers_in_hash_table_for_frequency_of_symbols[i]);
+    }*/
 
-        rigth->is_leaf = 1;
-        rigth->symbol = pointers_for_numbers_in_hash_table_for_frequency_of_symbols[i];
-        rigth->frequency = array_of_frequences[left->symbol];
+    huffman_node* huffman_node[length];
 
-        first_node->is_leaf = 0;
-        first_node->left = left;
-        first_node->right = rigth;
-
-        huffman_node *new_node;
-        if(length > 2){
-            i++;
-            while(i < 256){
-                huffman_node *rigth = malloc(sizeof(huffman_node));
-                rigth->is_leaf = 1;
-                rigth->symbol = pointers_for_numbers_in_hash_table_for_frequency_of_symbols[i];
-                rigth->frequency = array_of_frequences[rigth->symbol];
-
-                new_node = malloc(sizeof(huffman_node));
-                new_node->is_leaf = 0;
-                
-                i++;
-            }
-        }
-        return first_node;
+    uint8_t j = index_of_last_zero + 1;
+    for (uint16_t i = 0; i < length; i++) {
+        printf("%d\n", pointers_for_numbers_in_hash_table_for_frequency_of_symbols[j]);
+        //putchar(1+pointers_for_numbers_in_hash_table_for_frequency_of_symbols[index_of_last_zero]);
+        //huffman_node[i] = malloc(sizeof(huffman_node));
+        j++;
     }
 }
 
@@ -151,10 +119,11 @@ int main(){
     }
 
     uint16_t index_of_last_zero = HE_sort_indexes(indexes, hash_table_for_frequency_of_symbols);
+    printf("index_of_last_zero: %d\n", index_of_last_zero);
 
-    /*for(size_t i = index_of_last_zero; i < 256; i++){
+    for(size_t i = index_of_last_zero; i < 256; i++){
         printf("i = %d, in index array: %d, value = %ld\n", i, indexes[i], hash_table_for_frequency_of_symbols[indexes[i]]);
-    }*/
+    }
 
     // начало создания кодов
 
