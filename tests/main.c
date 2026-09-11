@@ -40,12 +40,11 @@ uint8_t HE_sort_indexes(uint8_t indexes[], uint64_t hash_table_for_frequency_of_
  * дерево строится так что в *left указывается текущий лист, а в *rigth указывается следующая ветвь листов
  * можно представить так:
 (A)    (B)   (C)    (D)
-  \    /     /      /
-   (AB)     /      /
-     \     /      /
-      (ABC)      /
-         \      /
-          (ABCD)
+  \    /       \    /
+   (AB)         (CD)
+       \       /
+        (ABCD)
+     
 ФИСВ
 */
 typedef struct huffman_node {
