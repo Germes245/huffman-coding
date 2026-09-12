@@ -77,7 +77,11 @@ huffman_node* build_huffman_tree(uint8_t pointers_for_numbers_in_hash_table_for_
         j++;
     }
 
-    // листья созданы, теперь строится 
+    // листья созданы, теперь строятся ветви
+
+    length /= 2;
+
+    
 }
 
 int main(){
