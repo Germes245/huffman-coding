@@ -55,6 +55,10 @@ typedef struct huffman_node {
     uint8_t is_leaf;              // 1, если это лист
 } huffman_node;
 
+void print_node(huffman_node* node){
+    printf("leaf: %d", node->is_leaf)
+}
+
 /*
  * @param index_of_last_zero -- индекс для массива, который указывает на число в массиве pointers_for_numbers_in_hash_table_for_frequency_of_symbols, которое является последним указателем в pointers_for_numbers_in_hash_table_for_frequency_of_symbols, указывающее на число 0 в хэш-таблице частот символов
 */
@@ -64,24 +68,34 @@ huffman_node* build_huffman_tree(uint8_t pointers_for_numbers_in_hash_table_for_
 
     // создание листьев
 
-    huffman_node* huffman_node[length];
+    huffman_node* huffman_nodes[length];
 
     uint8_t j = index_of_last_zero + 1;
     for (uint16_t i = 0; i < length; i++) {
         //printf("%d\n", pointers_for_numbers_in_hash_table_for_frequency_of_symbols[j]);
         //putchar(pointers_for_numbers_in_hash_table_for_frequency_of_symbols[j]);
-        huffman_node[i] = malloc(sizeof(huffman_node));
-        huffman_node[i]->is_leaf = 1;
-        huffman_node[i]->symbol = pointers_for_numbers_in_hash_table_for_frequency_of_symbols[j];
-        huffman_node[i]->frequency = array_of_frequences[huffman_node[i]->symbol];
+        huffman_nodes[i] = malloc(sizeof(huffman_node));
+        huffman_nodes[i]->is_leaf = 1;
+        huffman_nodes[i]->symbol = pointers_for_numbers_in_hash_table_for_frequency_of_symbols[j];
+        huffman_nodes[i]->frequency = array_of_frequences[huffman_nodes[i]->symbol];
         j++;
     }
 
     // листья созданы, теперь строятся ветви
 
-    length /= 2;
+    uint16_t length2 = length / 2;
+    j = 0;
 
-    
+    for (uint16_t i = 0; i < length2; i++) {
+        huffman_node *node = malloc(sizeof(huffman_node));
+        node->is_leaf = 0;
+        node->left = huffman_nodes[j];
+        j++;
+        node->right = huffman_nodes[j];
+        j++;
+        huffman_nodes[i] = node;
+    }
+
 }
 
 int main(){
