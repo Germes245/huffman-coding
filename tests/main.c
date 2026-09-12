@@ -56,7 +56,11 @@ typedef struct huffman_node {
 } huffman_node;
 
 void print_node(huffman_node* node){
-    printf("leaf: %d", node->is_leaf)
+    if(node->is_leaf){
+        printf("this is a list\nfreauency: %d\nsymbol: ", node->frequency);
+        putchar(node->symbol);
+        putchar('\n')
+    }
 }
 
 /*
