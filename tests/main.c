@@ -57,7 +57,7 @@ typedef struct huffman_node {
 
 void print_node(huffman_node* node){
     if(node->is_leaf){
-        printf("this is a list\nfreauency: %d\nsymbol: %d\n", node->frequency, node->symbol);
+        printf("this is a list\nfrequency: %d\nsymbol: %d\n", node->frequency, node->symbol);
     }
     else{
         printf("this is not a list\n");
@@ -76,6 +76,7 @@ huffman_node* build_huffman_tree(uint8_t pointers_for_numbers_in_hash_table_for_
     huffman_node* huffman_nodes[length];
 
     uint8_t j = index_of_last_zero + 1;
+    putchar('\n');
     for (uint16_t i = 0; i < length; i++) {
         //printf("%d\n", pointers_for_numbers_in_hash_table_for_frequency_of_symbols[j]);
         //putchar(pointers_for_numbers_in_hash_table_for_frequency_of_symbols[j]);
@@ -86,12 +87,16 @@ huffman_node* build_huffman_tree(uint8_t pointers_for_numbers_in_hash_table_for_
         j++;
         print_node(huffman_nodes[i]);
     }
-
+    
     // листья созданы, теперь строятся ветви
+
+    if(length == 1){ // если нода одна
+        return huffman_nodes[0];
+    }
 
     uint16_t length2 = length / 2;
     j = 0;
-
+    putchar('\n');
     for (uint16_t i = 0; i < length2; i++) {
         huffman_node *node = malloc(sizeof(huffman_node));
         node->is_leaf = 0;
@@ -100,6 +105,7 @@ huffman_node* build_huffman_tree(uint8_t pointers_for_numbers_in_hash_table_for_
         node->right = huffman_nodes[j];
         j++;
         huffman_nodes[i] = node;
+        print_node(huffman_nodes[i]);
     }
 
 }
