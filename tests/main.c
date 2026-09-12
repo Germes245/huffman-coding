@@ -7,6 +7,15 @@
 
 #define length_of_buffer file_info.st_size
 
+void *xmalloc(size_t size) {
+    void *ptr = malloc(size);
+    if (!ptr) {
+        fprintf(stderr, "xmalloc: out of memory (%zu bytes)\n", size);
+        exit(1);
+    }
+    return ptr;
+}
+
 // HE -- Huffman Encoding
 
 /*
@@ -57,10 +66,14 @@ typedef struct huffman_node {
 
 void print_node(huffman_node* node){
     if(node->is_leaf){
-        printf("this is a list\nfrequency: %d\nsymbol: %d\n", node->frequency, node->symbol);
+        printf("this is a leaf\nfrequency: %d\nsymbol: %d\n", node->frequency, node->symbol);
     }
     else{
-        printf("this is not a list\n");
+        printf("this is not a leaf\npoints on leafs:\nleft:\n");
+        print_node(node->left);
+        printf("rigth:\n");
+        print_node(node->right);
+        putchar('\n');
     }
 }
 
@@ -80,7 +93,11 @@ huffman_node* build_huffman_tree(uint8_t pointers_for_numbers_in_hash_table_for_
     for (uint16_t i = 0; i < length; i++) {
         //printf("%d\n", pointers_for_numbers_in_hash_table_for_frequency_of_symbols[j]);
         //putchar(pointers_for_numbers_in_hash_table_for_frequency_of_symbols[j]);
-        huffman_nodes[i] = malloc(sizeof(huffman_node));
+        huffman_nodes[i] = xmalloc(sizeof(huffman_node));
+        if(!array){
+            perror("out of memory\n");
+            exit(1);
+        }
         huffman_nodes[i]->is_leaf = 1;
         huffman_nodes[i]->symbol = pointers_for_numbers_in_hash_table_for_frequency_of_symbols[j];
         huffman_nodes[i]->frequency = array_of_frequences[huffman_nodes[i]->symbol];
@@ -88,7 +105,7 @@ huffman_node* build_huffman_tree(uint8_t pointers_for_numbers_in_hash_table_for_
         print_node(huffman_nodes[i]);
     }
     
-    // листья созданы, теперь строятся ветви
+    // листья созданы, теперь строится первый слой веток
 
     if(length == 1){ // если нода одна
         return huffman_nodes[0];
@@ -98,7 +115,7 @@ huffman_node* build_huffman_tree(uint8_t pointers_for_numbers_in_hash_table_for_
     j = 0;
     putchar('\n');
     for (uint16_t i = 0; i < length2; i++) {
-        huffman_node *node = malloc(sizeof(huffman_node));
+        huffman_node *node = xmalloc(sizeof(huffman_node));
         node->is_leaf = 0;
         node->left = huffman_nodes[j];
         j++;
@@ -108,10 +125,23 @@ huffman_node* build_huffman_tree(uint8_t pointers_for_numbers_in_hash_table_for_
         print_node(huffman_nodes[i]);
     }
 
+    if(length2 == 2){ // если символов 2, а замыкающая нода одна
+        return huffman_nodes[0];
+    }
+    else if(length2 == 3){
+        huffman_node *node = xmalloc(sizeof(huffman_node));
+        node->is_leaf = 0;
+        node->left = huffman_nodes[0];
+    }
+
+    for (; length2 != 1; length2 /= 2) {
+        printf("%d\n", length2);
+    }
+
 }
 
 int main(){
-    char* name_of_file = "one letter.txt";
+    char* name_of_file = "input";//"one letter.txt";
 
     // чтение файла
 
