@@ -94,10 +94,6 @@ huffman_node* build_huffman_tree(uint8_t pointers_for_numbers_in_hash_table_for_
         //printf("%d\n", pointers_for_numbers_in_hash_table_for_frequency_of_symbols[j]);
         //putchar(pointers_for_numbers_in_hash_table_for_frequency_of_symbols[j]);
         huffman_nodes[i] = xmalloc(sizeof(huffman_node));
-        if(!array){
-            perror("out of memory\n");
-            exit(1);
-        }
         huffman_nodes[i]->is_leaf = 1;
         huffman_nodes[i]->symbol = pointers_for_numbers_in_hash_table_for_frequency_of_symbols[j];
         huffman_nodes[i]->frequency = array_of_frequences[huffman_nodes[i]->symbol];
@@ -128,11 +124,24 @@ huffman_node* build_huffman_tree(uint8_t pointers_for_numbers_in_hash_table_for_
     if(length2 == 2){ // если символов 2, а замыкающая нода одна
         return huffman_nodes[0];
     }
+    if(length2 == 3){
+        
+    }
+
+    exit(1);
+
+    /*
+     * ИСПРАВИТЬ ОШИБКУ ОБРАБОТКИ ПОСЛЕДНЕГО СИМВОЛА В СЛУЧАЕ НЕЧЁТНОСТИ СИМВОЛОВ!
+    */
     else if(length2 == 3){
         huffman_node *node = xmalloc(sizeof(huffman_node));
         node->is_leaf = 0;
         node->left = huffman_nodes[0];
+        node->right = huffman_nodes[2];
+        return node;
     }
+
+    // начало построения второго слоя
 
     for (; length2 != 1; length2 /= 2) {
         printf("%d\n", length2);
