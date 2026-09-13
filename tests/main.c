@@ -56,12 +56,18 @@ uint8_t HE_sort_indexes(uint8_t indexes[], uint64_t hash_table_for_frequency_of_
      
 ФИСВ
 */
+
+enum is_leaf_{
+    NO,
+    YES
+};
+
 typedef struct huffman_node {
     uint8_t symbol;           // символ (если лист)
     uint64_t frequency;       // частота (вес)
     struct huffman_node *left;
     struct huffman_node *right;
-    uint8_t is_leaf;              // 1, если это лист
+    enum is_leaf_ is_leaf;              // 1, если это лист
 } huffman_node;
 
 void print_node(huffman_node* node){
@@ -94,7 +100,7 @@ huffman_node* build_huffman_tree(uint8_t pointers_for_numbers_in_hash_table_for_
         //printf("%d\n", pointers_for_numbers_in_hash_table_for_frequency_of_symbols[j]);
         //putchar(pointers_for_numbers_in_hash_table_for_frequency_of_symbols[j]);
         huffman_nodes[i] = xmalloc(sizeof(huffman_node));
-        huffman_nodes[i]->is_leaf = 1;
+        huffman_nodes[i]->is_leaf = YES;
         huffman_nodes[i]->symbol = pointers_for_numbers_in_hash_table_for_frequency_of_symbols[j];
         huffman_nodes[i]->frequency = array_of_frequences[huffman_nodes[i]->symbol];
         j++;
@@ -112,7 +118,7 @@ huffman_node* build_huffman_tree(uint8_t pointers_for_numbers_in_hash_table_for_
     putchar('\n');
     for (uint16_t i = 0; i < length2; i++) {
         huffman_node *node = xmalloc(sizeof(huffman_node));
-        node->is_leaf = 0;
+        node->is_leaf = NO;
         node->left = huffman_nodes[j];
         j++;
         node->right = huffman_nodes[j];
@@ -125,7 +131,10 @@ huffman_node* build_huffman_tree(uint8_t pointers_for_numbers_in_hash_table_for_
         return huffman_nodes[0];
     }
     if(length2 == 3){
-        
+        huffman_node *node = xmalloc(sizeof(huffman_node));
+        node->is_leaf = NO;
+        node->left = huffman_nodes[0];
+        node->right = huffman_nodes[2];
     }
 
     exit(1);
@@ -133,13 +142,13 @@ huffman_node* build_huffman_tree(uint8_t pointers_for_numbers_in_hash_table_for_
     /*
      * ИСПРАВИТЬ ОШИБКУ ОБРАБОТКИ ПОСЛЕДНЕГО СИМВОЛА В СЛУЧАЕ НЕЧЁТНОСТИ СИМВОЛОВ!
     */
-    else if(length2 == 3){
+    /*if(length2 == 3){
         huffman_node *node = xmalloc(sizeof(huffman_node));
-        node->is_leaf = 0;
+        node->is_leaf = NO;
         node->left = huffman_nodes[0];
         node->right = huffman_nodes[2];
         return node;
-    }
+    }*/
 
     // начало построения второго слоя
 
