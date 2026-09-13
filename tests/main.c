@@ -48,12 +48,12 @@ uint8_t HE_sort_indexes(uint8_t indexes[], uint64_t hash_table_for_frequency_of_
 /*
  * дерево строится так что в *left указывается текущий лист, а в *rigth указывается следующая ветвь листов
  * можно представить так:
-(A)    (B)   (C)    (D)
-  \    /       \    /
-   (AB)         (CD)
-       \       /
-        (ABCD)
-     
+(A)    (B)   (C)    (D)  (E)
+  \    /       \    /    /
+   (AB)         (CD)    /
+       \       /       /
+        (ABCD)        /
+                     /
 ФИСВ
 */
 
@@ -135,6 +135,8 @@ huffman_node* build_huffman_tree(uint8_t pointers_for_numbers_in_hash_table_for_
         node->is_leaf = NO;
         node->left = huffman_nodes[0];
         node->right = huffman_nodes[2];
+
+        return node;
     }
 
     exit(1);
@@ -142,18 +144,14 @@ huffman_node* build_huffman_tree(uint8_t pointers_for_numbers_in_hash_table_for_
     /*
      * ИСПРАВИТЬ ОШИБКУ ОБРАБОТКИ ПОСЛЕДНЕГО СИМВОЛА В СЛУЧАЕ НЕЧЁТНОСТИ СИМВОЛОВ!
     */
-    /*if(length2 == 3){
-        huffman_node *node = xmalloc(sizeof(huffman_node));
-        node->is_leaf = NO;
-        node->left = huffman_nodes[0];
-        node->right = huffman_nodes[2];
-        return node;
-    }*/
 
     // начало построения второго слоя
 
     for (; length2 != 1; length2 /= 2) {
-        printf("%d\n", length2);
+        
+        if(length2 % 2 == 1){
+            perror("ошибка в генерации ветвей");
+        }
     }
 
 }
