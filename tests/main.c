@@ -136,8 +136,6 @@ huffman_node* build_huffman_tree(uint8_t pointers_for_numbers_in_hash_table_for_
         return node;
     }
 
-    //exit(1);
-
     /*
      * ИСПРАВИТЬ ОШИБКУ ОБРАБОТКИ ПОСЛЕДНЕГО СИМВОЛА В СЛУЧАЕ НЕЧЁТНОСТИ СИМВОЛОВ!
     */
@@ -145,14 +143,18 @@ huffman_node* build_huffman_tree(uint8_t pointers_for_numbers_in_hash_table_for_
     // начало построения второго слоя
 
     j = 0;
-    for (; length2 <= 1; length2 /= 2) {
-        
-        if(length2 % 2 == 1){
-            perror("ошибка в генерации ветвей");
+    printf("shya\n");
+    for (uint16_t i = 0; length2 >= 1; length2 /= 2) {
+        printf("%d\n", length2);
+        //huffman_node *node = xmalloc(sizeof(huffman_node));
+
+        if(length2 % 2 == 1 && length2 != 1){
+            fprintf(stderr,"ошибка в генерации ветвей\n");
         }
         j++;
+        i+=2;
     }
-
+    exit(1);
 }
 
 int main(){
