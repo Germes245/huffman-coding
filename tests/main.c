@@ -97,14 +97,11 @@ huffman_node* build_huffman_tree(uint8_t pointers_for_numbers_in_hash_table_for_
     uint8_t j = index_of_last_zero + 1;
     putchar('\n');
     for (uint16_t i = 0; i < length; i++) {
-        //printf("%d\n", pointers_for_numbers_in_hash_table_for_frequency_of_symbols[j]);
-        //putchar(pointers_for_numbers_in_hash_table_for_frequency_of_symbols[j]);
         huffman_nodes[i] = xmalloc(sizeof(huffman_node));
         huffman_nodes[i]->is_leaf = YES;
         huffman_nodes[i]->symbol = pointers_for_numbers_in_hash_table_for_frequency_of_symbols[j];
         huffman_nodes[i]->frequency = array_of_frequences[huffman_nodes[i]->symbol];
         j++;
-        //print_node(huffman_nodes[i]);
     }
     
     // листья созданы, теперь строится первый слой веток
@@ -124,7 +121,6 @@ huffman_node* build_huffman_tree(uint8_t pointers_for_numbers_in_hash_table_for_
         node->right = huffman_nodes[j];
         j++;
         huffman_nodes[i] = node;
-        //print_node(huffman_nodes[i]);
     }
 
     if(length == 2){ // если символов 2, а замыкающая нода одна
@@ -135,14 +131,12 @@ huffman_node* build_huffman_tree(uint8_t pointers_for_numbers_in_hash_table_for_
         huffman_node *node = xmalloc(sizeof(huffman_node));
         node->is_leaf = NO;
         node->left = huffman_nodes[0];
-        //print_node(huffman_nodes[2]);
-        //printf("\n\n\n\n");
         node->right = huffman_nodes[2];
 
         return node;
     }
 
-    exit(1);
+    //exit(1);
 
     /*
      * ИСПРАВИТЬ ОШИБКУ ОБРАБОТКИ ПОСЛЕДНЕГО СИМВОЛА В СЛУЧАЕ НЕЧЁТНОСТИ СИМВОЛОВ!
@@ -150,14 +144,14 @@ huffman_node* build_huffman_tree(uint8_t pointers_for_numbers_in_hash_table_for_
 
     // начало построения второго слоя
 
-    /*j = 0;
+    j = 0;
     for (; length2 <= 1; length2 /= 2) {
         
         if(length2 % 2 == 1){
             perror("ошибка в генерации ветвей");
         }
         j++;
-    }*/
+    }
 
 }
 
