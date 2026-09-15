@@ -54,7 +54,11 @@ uint8_t HE_sort_indexes(uint8_t indexes[], uint64_t hash_table_for_frequency_of_
    (AB)         (CD)    /
        \       /       /
         (ABCD)        /
-                     /
+           \         /
+            \       /
+             \     /
+              \   /
+             (ABCDE)
 ФИСВ
 */
 
@@ -83,7 +87,7 @@ void print_node(huffman_node* node){
         putchar('\n');
     }
 }
-
+// elton john - a word in spanish
 /*
  * @param index_of_last_zero -- индекс для массива, который указывает на число в массиве pointers_for_numbers_in_hash_table_for_frequency_of_symbols, которое является последним указателем в pointers_for_numbers_in_hash_table_for_frequency_of_symbols, указывающее на число 0 в хэш-таблице частот символов
 */
@@ -122,28 +126,17 @@ huffman_node* build_huffman_tree(uint8_t pointers_for_numbers_in_hash_table_for_
         node->right = huffman_nodes[j];
         j++;
         huffman_nodes[i] = node;
-    }
-
-    if(length == 2){ // если символов 2, а замыкающая нода одна
-        return huffman_nodes[0];
-    }
-    if(length == 3){
-        printf("shya\n");
-        huffman_node *node = xmalloc(sizeof(huffman_node));
-        node->is_leaf = NO;
-        node->left = huffman_nodes[0];
-        node->right = huffman_nodes[2];
-
-        return node;
+        //printf("branch:\n\n");
+        //print_node(huffman_nodes[i]);
     }
 
     /*
      * ИСПРАВИТЬ ОШИБКУ ОБРАБОТКИ ПОСЛЕДНЕГО СИМВОЛА В СЛУЧАЕ НЕЧЁТНОСТИ СИМВОЛОВ!
     */
 
-    // начало построения второго слоя
+    // начало построения второго слоя и последующих слоёв
 
-    for (; length2 >= 1; length2 /= 2) {
+    for (; length2 > 1; length2 /= 2) {
         printf("length2 = %d\n", length2);
 
         if(length2 % 2 == 1 && length2 != 1){
@@ -162,8 +155,14 @@ huffman_node* build_huffman_tree(uint8_t pointers_for_numbers_in_hash_table_for_
             //j+=2;
         }
     }
-    print_node(huffman_nodes[0]);
-    exit(1);
+    //print_node(huffman_nodes[0]);
+    if (length % 2) {
+        huffman_node *node = xmalloc(sizeof(huffman_node));
+        node->left = huffman_nodes[0];
+        node->right = huffman_nodes[length-1];
+        return node;
+    }
+    return huffman_nodes[0];
 }
 
 int main(){
