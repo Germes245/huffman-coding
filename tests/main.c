@@ -1,3 +1,4 @@
+#include <cstddef>
 #include <stdint.h>
 #include <stddef.h>
 #include <stdio.h>
@@ -142,17 +143,18 @@ huffman_node* build_huffman_tree(uint8_t pointers_for_numbers_in_hash_table_for_
 
     // начало построения второго слоя
 
-    j = 0;
-    printf("shya\n");
-    for (uint16_t i = 0; length2 >= 1; length2 /= 2) {
-        printf("%d\n", length2);
-        //huffman_node *node = xmalloc(sizeof(huffman_node));
+    for (; length2 >= 1; length2 /= 2) {
+        printf("length2 = %d\n", length2);
+
+        j = 0;
+        for(uint16_t_t i = 0; i < length2; i+=2){
+            huffman_node *node = xmalloc(sizeof(huffman_node));
+            j++;
+        }
 
         if(length2 % 2 == 1 && length2 != 1){
             fprintf(stderr,"ошибка в генерации ветвей\n");
         }
-        j++;
-        i+=2;
     }
     exit(1);
 }
