@@ -115,10 +115,11 @@ huffman_node* build_huffman_tree(uint8_t pointers_for_numbers_in_hash_table_for_
         return huffman_nodes[0];
     }
 
-    uint16_t length2 = length / 2;
+    uint16_t length_of_last_layer = length;
+    uint16_t length_of_current_layer = length / 2;
     j = 0;
     putchar('\n');
-    for (uint16_t i = 0; i < length2; i++) {
+    for (uint16_t i = 0; i < length_of_current_layer; i++) {
         huffman_node *node = xmalloc(sizeof(huffman_node));
         node->is_leaf = NO;
         node->left = huffman_nodes[j];
@@ -129,38 +130,19 @@ huffman_node* build_huffman_tree(uint8_t pointers_for_numbers_in_hash_table_for_
     }
 
     // начало построения второго слоя и последующих слоёв
-
-    for (; length2 > 1; length2 /= 2) {
-        printf("length2 = %d\n", length2);
+    
+    length_of_last_layer = length_of_current_layer;
+    length_of_current_layer /= 2;
+    while(length_of_current_layer <= 1){
         j = 0;
-
-        if(length2 % 2 == 1 && length2 != 1){
-            fprintf(stderr,"ошибка в генерации ветвей\n");
-            uint16_t even_length2 = length2 - 1;
-            for(uint16_t i = 0; j < even_length2; i++){
-                huffman_node *node = xmalloc(sizeof(huffman_node));
-                node->is_leaf = NO;
-                node->left = huffman_nodes[j];
-                j++;
-                node->right = huffman_nodes[j];
-                j++;
-                huffman_nodes[i] = node;
-            }
-
-            //j++;
-            //exit(1);
+        if(length_of_current_layer % 2 == 1){
+            
         }
-
-        for(uint16_t i = 0; j < length2; i++){
-            huffman_node *node = xmalloc(sizeof(huffman_node));
-            node->is_leaf = NO;
-            node->left = huffman_nodes[j];
-            j++;
-            node->right = huffman_nodes[j];
-            j++;
-            huffman_nodes[i] = node;
+        for (uint16_t i = 0; i < length_of_current_layer; i++) {
+            
         }
     }
+
     if (length % 2) {
         huffman_node *node = xmalloc(sizeof(huffman_node));
         node->left = huffman_nodes[0];
