@@ -49,16 +49,16 @@ uint8_t HE_sort_indexes(uint8_t indexes[], uint64_t hash_table_for_frequency_of_
 /*
  * дерево строится так что в *left указывается текущий лист, а в *rigth указывается следующая ветвь листов
  * можно представить так:
-(A)    (B)   (C)    (D)  (E)
-  \    /       \    /    /
-   (AB)         (CD)    /
-       \       /       /
-        (ABCD)        /
-           \         /
-            \       /
-             \     /
-              \   /
-             (ABCDE)
+(A)    (B)   (C)    (D)   (E)   (F)
+  \    /       \    /      \    /
+   (AB)         (CD)        (EF)   
+       \       /           /
+        (ABCD)            /
+           \             /
+            \           /
+             \         /
+              \       /
+               (ABCDEF)
 ФИСВ
 */
 
@@ -126,24 +126,31 @@ huffman_node* build_huffman_tree(uint8_t pointers_for_numbers_in_hash_table_for_
         node->right = huffman_nodes[j];
         j++;
         huffman_nodes[i] = node;
-        //printf("branch:\n\n");
-        //print_node(huffman_nodes[i]);
     }
-
-    /*
-     * ИСПРАВИТЬ ОШИБКУ ОБРАБОТКИ ПОСЛЕДНЕГО СИМВОЛА В СЛУЧАЕ НЕЧЁТНОСТИ СИМВОЛОВ!
-    */
 
     // начало построения второго слоя и последующих слоёв
 
     for (; length2 > 1; length2 /= 2) {
         printf("length2 = %d\n", length2);
+        j = 0;
 
         if(length2 % 2 == 1 && length2 != 1){
             fprintf(stderr,"ошибка в генерации ветвей\n");
+            uint16_t even_length2 = length2 - 1;
+            for(uint16_t i = 0; j < even_length2; i++){
+                huffman_node *node = xmalloc(sizeof(huffman_node));
+                node->is_leaf = NO;
+                node->left = huffman_nodes[j];
+                j++;
+                node->right = huffman_nodes[j];
+                j++;
+                huffman_nodes[i] = node;
+            }
+
+            //j++;
+            //exit(1);
         }
 
-        j = 0;
         for(uint16_t i = 0; j < length2; i++){
             huffman_node *node = xmalloc(sizeof(huffman_node));
             node->is_leaf = NO;
@@ -152,10 +159,8 @@ huffman_node* build_huffman_tree(uint8_t pointers_for_numbers_in_hash_table_for_
             node->right = huffman_nodes[j];
             j++;
             huffman_nodes[i] = node;
-            //j+=2;
         }
     }
-    //print_node(huffman_nodes[0]);
     if (length % 2) {
         huffman_node *node = xmalloc(sizeof(huffman_node));
         node->left = huffman_nodes[0];
