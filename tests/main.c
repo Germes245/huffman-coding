@@ -115,7 +115,7 @@ huffman_node* build_huffman_tree(uint8_t pointers_for_numbers_in_hash_table_for_
     }
 
     huffman_node* stack_for_tree[length];
-    uint16_t position_of_last_element_of_stack = 0;
+    uint16_t score_of_elements_in_stack = 0;
 
     uint16_t length_of_last_layer = length;
     uint16_t length_of_current_layer = length / 2;
@@ -123,11 +123,11 @@ huffman_node* build_huffman_tree(uint8_t pointers_for_numbers_in_hash_table_for_
     do{
         printf("last_layer: %d\n", length_of_last_layer);
         printf("current layer: %d\n", length_of_current_layer);
-        printf("stack pos: %d\n", position_of_last_element_of_stack);
+        printf("stack pos: %d\n", score_of_elements_in_stack);
         j = 0;
         if(length_of_last_layer % 2 == 1){
-            stack_for_tree[position_of_last_element_of_stack] = huffman_nodes[length_of_last_layer-1];
-            position_of_last_element_of_stack++;
+            stack_for_tree[score_of_elements_in_stack] = huffman_nodes[length_of_last_layer-1];
+            score_of_elements_in_stack++;
         }
         for (uint16_t i = 0; i < length_of_last_layer;) {
             huffman_node *node = xmalloc(sizeof(huffman_node));
@@ -144,14 +144,15 @@ huffman_node* build_huffman_tree(uint8_t pointers_for_numbers_in_hash_table_for_
     } while (length_of_last_layer > 1);
 
     print_node(huffman_nodes[0]);
-    printf("stack pos: %d\n", position_of_last_element_of_stack);
+    printf("stack pos: %d\n", score_of_elements_in_stack);
 
-    for(; position_of_last_element_of_stack > 0; position_of_last_element_of_stack--){
+    if()
+    for(uint16_t i = score_of_elements_in_stack - 1; i >= 0; i--){
         printf("shya\n");
         huffman_node *new_root = xmalloc(sizeof(huffman_node));
         new_root->is_leaf = NO;
         new_root->left = huffman_nodes[0];
-        new_root->right = stack_for_tree[position_of_last_element_of_stack];
+        new_root->right = stack_for_tree[score_of_elements_in_stack];
         huffman_nodes[0] = new_root;
         print_node(huffman_nodes[0]);
     }
