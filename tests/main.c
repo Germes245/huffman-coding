@@ -93,14 +93,13 @@ void print_node(huffman_node* node){
 */
 huffman_node* build_huffman_tree(uint8_t pointers_for_numbers_in_hash_table_for_frequency_of_symbols[], uint64_t *array_of_frequences, uint16_t index_of_last_zero){
     uint16_t length = 255 - index_of_last_zero;
-    printf("length: %d\n", length);
 
     // создание листьев
 
     huffman_node* huffman_nodes[length];
 
     uint8_t j = index_of_last_zero + 1;
-    putchar('\n');
+    //putchar('\n');
     for (uint16_t i = 0; i < length; i++) {
         huffman_nodes[i] = xmalloc(sizeof(huffman_node));
         huffman_nodes[i]->is_leaf = YES;
@@ -115,10 +114,13 @@ huffman_node* build_huffman_tree(uint8_t pointers_for_numbers_in_hash_table_for_
         return huffman_nodes[0];
     }
 
+    huffman_node* stack_for_tree[length];
+    uint16_t position_of_last_element_of_stack = 0;
+
     uint16_t length_of_last_layer = length;
     uint16_t length_of_current_layer = length / 2;
     j = 0;
-    putchar('\n');
+    //putchar('\n');
     for (uint16_t i = 0; i < length_of_current_layer; i++) {
         huffman_node *node = xmalloc(sizeof(huffman_node));
         node->is_leaf = NO;
@@ -131,15 +133,14 @@ huffman_node* build_huffman_tree(uint8_t pointers_for_numbers_in_hash_table_for_
 
     // начало построения второго слоя и последующих слоёв
     
-    length_of_last_layer = length_of_current_layer;
+    length_of_last_layer = length_of_current_layer - (length_of_current_layer % 2);
     length_of_current_layer /= 2;
 
-    huffman_node* stack_for_tree[length];
-    uint16_t position_of_last_element_of_stack = 0;
-
-    while(length_of_current_layer > 1){
+    do{
+        printf("last_layer: %d\n", length_of_last_layer);
+        printf("current layer: %d\n", length_of_current_layer);
         j = 0;
-        if(length_of_current_layer % 2 == 1){
+        if(length_of_last_layer % 2 == 1){
             stack_for_tree[position_of_last_element_of_stack] = huffman_nodes[length_of_current_layer-1];
             position_of_last_element_of_stack++;
         }
@@ -155,12 +156,13 @@ huffman_node* build_huffman_tree(uint8_t pointers_for_numbers_in_hash_table_for_
         }
         length_of_last_layer = length_of_current_layer;
         length_of_current_layer /= 2;
-    }
+    } while (length_of_current_layer > 1);
 
-    printf("%d\n", position_of_last_element_of_stack);
-    //exit(1);
+    //printf("length: %d\n", length);
+    printf("stack pos: %d\n", position_of_last_element_of_stack);
 
-    if (length % 2) {
+    if (length % 2 == 1) {
+        printf("it entered!\n");
         huffman_node *node = xmalloc(sizeof(huffman_node));
         node->left = huffman_nodes[0];
         node->right = huffman_nodes[length-1];
