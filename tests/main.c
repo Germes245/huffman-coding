@@ -119,29 +119,14 @@ huffman_node* build_huffman_tree(uint8_t pointers_for_numbers_in_hash_table_for_
 
     uint16_t length_of_last_layer = length;
     uint16_t length_of_current_layer = length / 2;
-    j = 0;
-    //putchar('\n');
-    for (uint16_t i = 0; i < length_of_current_layer; i++) {
-        huffman_node *node = xmalloc(sizeof(huffman_node));
-        node->is_leaf = NO;
-        node->left = huffman_nodes[j];
-        j++;
-        node->right = huffman_nodes[j];
-        j++;
-        huffman_nodes[i] = node;
-    }
-
-    // начало построения второго слоя и последующих слоёв
-    
-    length_of_last_layer = length_of_current_layer - (length_of_current_layer % 2);
-    length_of_current_layer /= 2;
 
     do{
         printf("last_layer: %d\n", length_of_last_layer);
         printf("current layer: %d\n", length_of_current_layer);
+        printf("stack pos: %d\n", position_of_last_element_of_stack);
         j = 0;
         if(length_of_last_layer % 2 == 1){
-            stack_for_tree[position_of_last_element_of_stack] = huffman_nodes[length_of_current_layer-1];
+            stack_for_tree[position_of_last_element_of_stack] = huffman_nodes[length_of_last_layer-1];
             position_of_last_element_of_stack++;
         }
         for (uint16_t i = 0; i < length_of_last_layer;) {
@@ -156,18 +141,21 @@ huffman_node* build_huffman_tree(uint8_t pointers_for_numbers_in_hash_table_for_
         }
         length_of_last_layer = length_of_current_layer;
         length_of_current_layer /= 2;
-    } while (length_of_current_layer > 1);
+    } while (length_of_last_layer > 1);
 
-    //printf("length: %d\n", length);
+    print_node(huffman_nodes[0]);
     printf("stack pos: %d\n", position_of_last_element_of_stack);
 
-    if (length % 2 == 1) {
-        printf("it entered!\n");
-        huffman_node *node = xmalloc(sizeof(huffman_node));
-        node->left = huffman_nodes[0];
-        node->right = huffman_nodes[length-1];
-        return node;
+    for(; position_of_last_element_of_stack > 0; position_of_last_element_of_stack--){
+        printf("shya\n");
+        huffman_node *new_root = xmalloc(sizeof(huffman_node));
+        new_root->is_leaf = NO;
+        new_root->left = huffman_nodes[0];
+        new_root->right = stack_for_tree[position_of_last_element_of_stack];
+        huffman_nodes[0] = new_root;
+        print_node(huffman_nodes[0]);
     }
+    exit(1);
     return huffman_nodes[0];
 }
 
