@@ -133,15 +133,32 @@ huffman_node* build_huffman_tree(uint8_t pointers_for_numbers_in_hash_table_for_
     
     length_of_last_layer = length_of_current_layer;
     length_of_current_layer /= 2;
-    while(length_of_current_layer <= 1){
+
+    huffman_node* stack_for_tree[length];
+    uint16_t position_of_last_element_of_stack = 0;
+
+    while(length_of_current_layer > 1){
         j = 0;
         if(length_of_current_layer % 2 == 1){
-            
+            stack_for_tree[position_of_last_element_of_stack] = huffman_nodes[length_of_current_layer-1];
+            position_of_last_element_of_stack++;
         }
-        for (uint16_t i = 0; i < length_of_current_layer; i++) {
-            
+        for (uint16_t i = 0; i < length_of_last_layer;) {
+            huffman_node *node = xmalloc(sizeof(huffman_node));
+            node->is_leaf = NO;
+            node->left = huffman_nodes[i];
+            i++;
+            node->right = huffman_nodes[i];
+            i++;
+            huffman_nodes[j] = node;
+            j++;
         }
+        length_of_last_layer = length_of_current_layer;
+        length_of_current_layer /= 2;
     }
+
+    printf("%d\n", position_of_last_element_of_stack);
+    //exit(1);
 
     if (length % 2) {
         huffman_node *node = xmalloc(sizeof(huffman_node));
