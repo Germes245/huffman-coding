@@ -143,20 +143,29 @@ huffman_node* build_huffman_tree(uint8_t pointers_for_numbers_in_hash_table_for_
         length_of_current_layer /= 2;
     } while (length_of_last_layer > 1);
 
-    print_node(huffman_nodes[0]);
+    //print_node(huffman_nodes[0]);
     printf("stack pos: %d\n", score_of_elements_in_stack);
 
-    if()
-    for(uint16_t i = score_of_elements_in_stack - 1; i >= 0; i--){
-        printf("shya\n");
-        huffman_node *new_root = xmalloc(sizeof(huffman_node));
-        new_root->is_leaf = NO;
-        new_root->left = huffman_nodes[0];
-        new_root->right = stack_for_tree[score_of_elements_in_stack];
-        huffman_nodes[0] = new_root;
-        print_node(huffman_nodes[0]);
+    /*for(uint16_t i = 0; i < score_of_elements_in_stack; i++){
+        print_node(stack_for_tree[i]);
+    }*/
+    //exit(1);
+
+    if(score_of_elements_in_stack != 0){
+        //printf("%d, %d\n", score_of_elements_in_stack, score_of_elements_in_stack - 1);
+        uint16_t i = score_of_elements_in_stack;
+        do{
+            i--;
+            printf("shya\n");
+            huffman_node *new_root = xmalloc(sizeof(huffman_node));
+            new_root->is_leaf = NO;
+            new_root->left = huffman_nodes[0];
+            new_root->right = stack_for_tree[i];
+            huffman_nodes[0] = new_root;
+            //print_node(huffman_nodes[0]);
+        } while(i != 0);
     }
-    exit(1);
+    //exit(1);
     return huffman_nodes[0];
 }
 
