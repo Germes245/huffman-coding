@@ -75,6 +75,17 @@ typedef struct huffman_node {
     enum is_leaf_ is_leaf;              // 1, если это лист
 } huffman_node;
 
+typedef struct{
+    uint8_t symbol;
+    uint8_t code[16];
+    uint8_t length_of_code;
+} huffman_code;
+
+typedef struct{
+    huffman_code* array;
+    uint16_t length;
+} huffman_code_array;
+
 void print_node(huffman_node* node){
     if(node->is_leaf){
         printf("this is a leaf\nfrequency: %d\nsymbol: %d\n", node->frequency, node->symbol);
@@ -99,7 +110,6 @@ huffman_node* build_huffman_tree(uint8_t pointers_for_numbers_in_hash_table_for_
     huffman_node* huffman_nodes[length];
 
     uint8_t j = index_of_last_zero + 1;
-    //putchar('\n');
     for (uint16_t i = 0; i < length; i++) {
         huffman_nodes[i] = xmalloc(sizeof(huffman_node));
         huffman_nodes[i]->is_leaf = YES;
@@ -143,16 +153,9 @@ huffman_node* build_huffman_tree(uint8_t pointers_for_numbers_in_hash_table_for_
         length_of_current_layer /= 2;
     } while (length_of_last_layer > 1);
 
-    //print_node(huffman_nodes[0]);
     printf("stack pos: %d\n", score_of_elements_in_stack);
 
-    /*for(uint16_t i = 0; i < score_of_elements_in_stack; i++){
-        print_node(stack_for_tree[i]);
-    }*/
-    //exit(1);
-
     if(score_of_elements_in_stack != 0){
-        //printf("%d, %d\n", score_of_elements_in_stack, score_of_elements_in_stack - 1);
         uint16_t i = score_of_elements_in_stack;
         do{
             i--;
@@ -162,11 +165,55 @@ huffman_node* build_huffman_tree(uint8_t pointers_for_numbers_in_hash_table_for_
             new_root->left = huffman_nodes[0];
             new_root->right = stack_for_tree[i];
             huffman_nodes[0] = new_root;
-            //print_node(huffman_nodes[0]);
         } while(i != 0);
     }
-    //exit(1);
     return huffman_nodes[0];
+}
+/*
+#define add_code(array, symbol){
+
+}*/
+
+enum direct{
+    LEFT,
+    RIGHT
+};
+
+typedef struct{
+    huffman_node* node;
+    enum direct direct;
+} node_for_stack;
+
+/*
+ * возвращает текущий bypass_stack_current_element
+*/
+static uint8_t go_to_left(node_for_stack bypass_stack[], uint8_t bypass_stack_current_element){
+    while (1) {
+        huffman_node* current_node = bypass_stack[bypass_stack_current_element].node;
+        enum is_leaf_ is_leaf_ = current_node->is_leaf;
+        if(is_leaf_ == NO){
+            bypass_stack_current_element++;
+            bypass_stack[bypass_stack_current_element].node = current_node->left;
+            bypass_stack[bypass_stack_current_element].direct = RIGHT;
+        }
+        else if(is_leaf_ == YES){
+            bypass_stack[bypass_stack_current_element].node = current_node;
+            return bypass_stack_current_element;
+        }
+        //bypass_stack_current_element++;
+    }
+}
+
+huffman_code_array get_codes_of_symbols(, huffman_node* root_node){
+    huffman_code_array array;
+    array.length = 1;
+    array.array = xmalloc(sizeof(huffman_code));
+    node_for_stack bypass_stack[128];
+    bypass_stack[0].node = root_node;
+    bypass_stack[0].direct = LEFT;
+    uint8_t bypass_stack_current_element = go_to_left(bypass_stack, 0);
+    printf("bypass_stack_current_element = %d\n", bypass_stack_current_element);
+
 }
 
 int main(){
@@ -218,5 +265,6 @@ int main(){
     // начало создания кодов
 
     huffman_node *root = build_huffman_tree(indexes, hash_table_for_frequency_of_symbols, index_of_last_zero);
-    print_node(root);
+    //print_node(root);
+    get_codes_of_symbols(root);
 }
