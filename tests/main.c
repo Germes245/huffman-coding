@@ -1,3 +1,11 @@
+/**
+ * @file main.c
+ * @brief Подсчёт частот байтов, сортировка символов по частоте и построение дерева Хаффмана.
+ *
+ * В файле реализованы вспомогательные функции для кодирования Хаффмана:
+ * подсчёт частот символов, сортировка индексов по частотам и сборка дерева.
+ */
+
 //#include <cstddef>
 #include <stdint.h>
 #include <stddef.h>
@@ -6,8 +14,21 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 
+/**
+ * @def length_of_buffer
+ * @brief Длина входного файла в байтах.
+ *
+ * Макрос обращается к полю st_size структуры file_info.
+ * Предполагается, что переменная file_info объявлена в области видимости.
+ */
 #define length_of_buffer file_info.st_size
 
+/**
+ * @brief Выделяет память заданного размера или завершает программу при ошибке.
+ *
+ * @param size Количество байт для выделения.
+ * @return Указатель на выделенный блок памяти.
+ */
 void *xmalloc(size_t size) {
     void *ptr = malloc(size);
     if (!ptr) {
@@ -19,16 +40,29 @@ void *xmalloc(size_t size) {
 
 // HE -- Huffman Encoding
 
-/*
- * подсчитывает частотность символов
- * hash_table_for_frequency_of_symbols -- указатель на массив фиксированой длины в 256 элементов
-*/
+/**
+ * @brief Подсчитывает частоты появления байтов во входном массиве.
+ *
+ * @param[out] hash_table_for_frequency_of_symbols Массив из 256 счётчиков частот.
+ * @param[in] array_of_symbols Входной массив байтов.
+ * @param[in] length_of_array_of_symbols Количество байтов в массиве.
+ */
 void HE_count_frequency(uint64_t *hash_table_for_frequency_of_symbols, uint8_t *array_of_symbols, size_t length_of_array_of_symbols){
     for(size_t i = 0; i < length_of_array_of_symbols; i++){
         hash_table_for_frequency_of_symbols[array_of_symbols[i]]++;
     }
 }
 
+/**
+ * @brief Сортирует индексы символов по возрастанию частоты пузырьковой сортировкой.
+ *
+ * @param[in,out] indexes Массив индексов 0..255, который сортируется по частотам.
+ * @param[in] hash_table_for_frequency_of_symbols Таблица частот символов.
+ * @return Индекс последнего нулевого элемента в отсортированном массиве.
+ *
+ * @note Переменная index_of_last_zero обновляется только при обмене элементов,
+ *       поэтому в некоторых случаях её значение требует дополнительной проверки.
+ */
 uint8_t HE_sort_indexes(uint8_t indexes[], uint64_t hash_table_for_frequency_of_symbols[]){
     uint8_t index_of_last_zero;
     for(size_t i = 0; i < 256; i++){
@@ -62,24 +96,41 @@ uint8_t HE_sort_indexes(uint8_t indexes[], uint64_t hash_table_for_frequency_of_
 ФИСВ
 */
 
+/**
+ * @enum is_leaf_
+ * @brief Признак того, является ли узел дерева листом.
+ */
 enum is_leaf_{
-    NO,
-    YES
+    NO,  ///< Узел не является листом.
+    YES  ///< Узел является листом.
 };
 
+/**
+ * @struct huffman_node
+ * @brief Узел дерева Хаффмана.
+ */
 typedef struct huffman_node {
-    uint8_t symbol;           // символ (если лист)
-    uint64_t frequency;       // частота (вес)
-    struct huffman_node *left;
-    struct huffman_node *right;
-    enum is_leaf_ is_leaf;              // 1, если это лист
+    uint8_t symbol;           ///< Символ (если узел — лист).
+    uint64_t frequency;       ///< Частота (вес) узла.
+    struct huffman_node *left;///< Левый потомок.
+    struct huffman_node *right;///< Правый потомок.
+    enum is_leaf_ is_leaf;    ///< Признак листа.
 } huffman_node;
 
+/**
+ * @struct huffman_code
+ * @brief Код Хаффмана для символа.
+ */
 typedef struct{
-    uint8_t code[16];
-    uint8_t length_of_code;
+    uint8_t code[16];         ///< Битовая последовательность кода.
+    uint8_t length_of_code;   ///< Длина кода в битах.
 } huffman_code;
 
+/**
+ * @brief Рекурсивно выводит узел дерева Хаффмана в stdout.
+ *
+ * @param node Узел для вывода.
+ */
 void print_node(huffman_node* node){
     if(node->is_leaf){
         printf("this is a leaf\nfrequency: %d\nsymbol: %d\n", node->frequency, node->symbol);
@@ -93,9 +144,18 @@ void print_node(huffman_node* node){
     }
 }
 // elton john - a word in spanish
-/*
- * @param index_of_last_zero -- индекс для массива, который указывает на число в массиве pointers_for_numbers_in_hash_table_for_frequency_of_symbols, которое является последним указателем в pointers_for_numbers_in_hash_table_for_frequency_of_symbols, указывающее на число 0 в хэш-таблице частот символов
-*/
+
+/**
+ * @brief Строит дерево Хаффмана по отсортированным частотам символов.
+ *
+ * @param[in] pointers_for_numbers_in_hash_table_for_frequency_of_symbols Массив индексов символов,
+ *            отсортированных по частоте.
+ * @param[in] array_of_frequences Таблица частот символов.
+ * @param[in] index_of_last_zero Индекс последнего нулевого элемента в массиве индексов.
+ * @return Указатель на корень построенного дерева Хаффмана.
+ *
+ * @note Входной массив индексов должен быть отсортирован по возрастанию частоты.
+ */
 huffman_node* build_huffman_tree(uint8_t pointers_for_numbers_in_hash_table_for_frequency_of_symbols[], uint64_t *array_of_frequences, uint16_t index_of_last_zero){
     uint16_t length = 255 - index_of_last_zero;
 
@@ -163,47 +223,13 @@ huffman_node* build_huffman_tree(uint8_t pointers_for_numbers_in_hash_table_for_
     }
     return huffman_nodes[0];
 }
-/*
-#define add_code(array, symbol){
-
-}*/
-
-enum direct{
-    LEFT,
-    RIGHT
-};
 
 typedef struct{
-    huffman_node* node;
-    enum direct direct;
-} node_for_stack;
+    uint8_t code[16];
+    uint8_t length_of_code;
+} huffman_code;
 
-/*
- * возвращает текущий bypass_stack_current_element
-*/
-/*
-static uint8_t go_to_left(node_for_stack bypass_stack[], uint8_t bypass_stack_current_element){
-    while (1) {
-        huffman_node* current_node = bypass_stack[bypass_stack_current_element].node;
-        enum is_leaf_ is_leaf_ = current_node->is_leaf;
-        if(is_leaf_ == NO){
-            bypass_stack_current_element++;
-            bypass_stack[bypass_stack_current_element].node = current_node->left;
-            bypass_stack[bypass_stack_current_element].direct = RIGHT;
-        }
-        else if(is_leaf_ == YES){
-            bypass_stack[bypass_stack_current_element].node = current_node;
-            return bypass_stack_current_element;
-        }
-        //bypass_stack_current_element++;
-    }
-}*/
 
-/*
- * выдаёт код для каждого символа, по кодированию Хаффана
- * @param 
-*/
-huffman_code_array get_codes_of_symbols(huffman_code , huffman_node* root_node);*/
 
 int main(){
     char* name_of_file = "one letter.txt";//"input";
@@ -254,6 +280,5 @@ int main(){
     // начало создания кодов
 
     huffman_node *root = build_huffman_tree(indexes, hash_table_for_frequency_of_symbols, index_of_last_zero);
-    //print_node(root);
     get_codes_of_symbols(root);
 }
