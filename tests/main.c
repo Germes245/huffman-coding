@@ -76,15 +76,9 @@ typedef struct huffman_node {
 } huffman_node;
 
 typedef struct{
-    uint8_t symbol;
     uint8_t code[16];
     uint8_t length_of_code;
 } huffman_code;
-
-typedef struct{
-    huffman_code* array;
-    uint16_t length;
-} huffman_code_array;
 
 void print_node(huffman_node* node){
     if(node->is_leaf){
@@ -187,6 +181,7 @@ typedef struct{
 /*
  * возвращает текущий bypass_stack_current_element
 */
+/*
 static uint8_t go_to_left(node_for_stack bypass_stack[], uint8_t bypass_stack_current_element){
     while (1) {
         huffman_node* current_node = bypass_stack[bypass_stack_current_element].node;
@@ -202,19 +197,13 @@ static uint8_t go_to_left(node_for_stack bypass_stack[], uint8_t bypass_stack_cu
         }
         //bypass_stack_current_element++;
     }
-}
+}*/
 
-huffman_code_array get_codes_of_symbols(, huffman_node* root_node){
-    huffman_code_array array;
-    array.length = 1;
-    array.array = xmalloc(sizeof(huffman_code));
-    node_for_stack bypass_stack[128];
-    bypass_stack[0].node = root_node;
-    bypass_stack[0].direct = LEFT;
-    uint8_t bypass_stack_current_element = go_to_left(bypass_stack, 0);
-    printf("bypass_stack_current_element = %d\n", bypass_stack_current_element);
-
-}
+/*
+ * выдаёт код для каждого символа, по кодированию Хаффана
+ * @param 
+*/
+huffman_code_array get_codes_of_symbols(huffman_code , huffman_node* root_node);*/
 
 int main(){
     char* name_of_file = "one letter.txt";//"input";
