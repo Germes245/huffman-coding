@@ -239,29 +239,6 @@ huffman_node* build_huffman_tree(uint8_t pointers_for_numbers_in_hash_table_for_
  *       code[0], второй — в следующий бит и т.д. Максимальная длина кода
  *       ограничена размером массива code (16 байт = 128 бит).
  */
-void get_codes_of_symbols(huffman_code codes[], huffman_node *root);
-
-/* Вспомогательная рекурсивная функция для обхода дерева. */
-static void get_codes_recursive(huffman_node *node, huffman_code codes[],
-                                uint8_t path[], uint8_t depth) {
-    if (node->is_leaf) {
-        /* Копируем накопленный путь в код символа, упаковывая биты в байты. */
-        for (uint8_t i = 0; i < depth; i++) {
-            if (path[i] == 1) {
-                codes[node->symbol].code[i / 8] |= (1 << (7 - (i % 8)));
-            }
-        }
-        codes[node->symbol].length_of_code = depth;
-        return;
-    }
-    /* Левая ветвь — бит 1 */
-    path[depth] = 1;
-    get_codes_recursive(node->left, codes, path, depth + 1);
-    /* Правая ветвь — бит 0 */
-    path[depth] = 0;
-    get_codes_recursive(node->right, codes, path, depth + 1);
-}
-
 void get_codes_of_symbols(huffman_code codes[], huffman_node *root) {
     /* Инициализируем все коды нулями */
     for (int i = 0; i < 256; i++) {
@@ -271,8 +248,67 @@ void get_codes_of_symbols(huffman_code codes[], huffman_node *root) {
         codes[i].length_of_code = 0;
     }
 
-    uint8_t path[256]; /* Временный буфер для пути (максимальная глубина 255) */
-    get_codes_recursive(root, codes, path, 0);
+    if (root == NULL) {
+        return;
+    }
+
+    /* Кадр стека для итеративного обхода */
+    typedef struct {
+        huffman_node *node;   /* текущий узел */
+        uint8_t depth;        /* глубина узла (длина префикса) */
+        uint8_t state;        /* 0 — только вошли, 1 — левый обработан, 2 — правый обработан */
+    } dfs_frame;
+
+    uint8_t path[256];        /* временный буфер для битов пути (макс. глубина 255) */
+    dfs_frame stack[256];     /* стек для обхода (макс. глубина 255) */
+    int top = 0;
+
+    /* Помещаем корень в стек */
+    stack[top].node = root;
+    stack[top].depth = 0;
+    stack[top].state = 0;
+    top++;
+
+    while (top > 0) {
+        dfs_frame *frame = &stack[top - 1];
+        huffman_node *node = frame->node;
+        uint8_t depth = frame->depth;
+
+        if (frame->state == 0) {
+            /* Первое посещение узла */
+            if (node->is_leaf) {
+                /* Записываем код для листа */
+                huffman_code *code = &codes[node->symbol];
+                code->length_of_code = depth;
+                for (uint8_t i = 0; i < depth; i++) {
+                    if (path[i] == 1) {
+                        code->code[i / 8] |= (1 << (7 - (i % 8)));
+                    }
+                }
+                /* Лист не имеет потомков — сразу удаляем из стека */
+                top--;
+            } else {
+                /* Идём в левый потомок (бит 1) */
+                path[depth] = 1;
+                stack[top].node = node->left;
+                stack[top].depth = depth + 1;
+                stack[top].state = 0;
+                top++;
+                frame->state = 1; /* при следующем возврате левый уже обработан */
+            }
+        } else if (frame->state == 1) {
+            /* Левый потомок обработан, идём в правый (бит 0) */
+            path[depth] = 0;
+            stack[top].node = node->right;
+            stack[top].depth = depth + 1;
+            stack[top].state = 0;
+            top++;
+            frame->state = 2; /* при следующем возврате правый уже обработан */
+        } else {
+            /* Оба потомка обработаны — удаляем узел из стека */
+            top--;
+        }
+    }
 }
 
 int main(){
