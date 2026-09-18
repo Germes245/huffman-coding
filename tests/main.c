@@ -224,10 +224,56 @@ huffman_node* build_huffman_tree(uint8_t pointers_for_numbers_in_hash_table_for_
     return huffman_nodes[0];
 }
 
-/*
- * модифицирует массив codes, так, что здесь символ становится индексом, а в структуре huffman_code, который находится по данному индексу в массиве codes, записывается код по принципу что если ветвь идёт налево, то 1, иначе 0.
-*/
+/**
+ * @brief Заполняет массив кодов Хаффмана для всех символов дерева.
+ *
+ * Функция обходит дерево Хаффмана от корня к листьям, накапливая биты кода.
+ * При переходе по левой ветви добавляется бит 1, по правой — 0.
+ * Для каждого листа в массив codes по индексу символа записывается
+ * упакованная последовательность битов и её длина.
+ *
+ * @param[out] codes Массив размером 256, где codes[symbol] содержит код для символа.
+ * @param[in] root Корень дерева Хаффмана.
+ *
+ * @note Биты упаковываются в байты: первый бит кода записывается в старший бит
+ *       code[0], второй — в следующий бит и т.д. Максимальная длина кода
+ *       ограничена размером массива code (16 байт = 128 бит).
+ */
 void get_codes_of_symbols(huffman_code codes[], huffman_node *root);
+
+/* Вспомогательная рекурсивная функция для обхода дерева. */
+static void get_codes_recursive(huffman_node *node, huffman_code codes[],
+                                uint8_t path[], uint8_t depth) {
+    if (node->is_leaf) {
+        /* Копируем накопленный путь в код символа, упаковывая биты в байты. */
+        for (uint8_t i = 0; i < depth; i++) {
+            if (path[i] == 1) {
+                codes[node->symbol].code[i / 8] |= (1 << (7 - (i % 8)));
+            }
+        }
+        codes[node->symbol].length_of_code = depth;
+        return;
+    }
+    /* Левая ветвь — бит 1 */
+    path[depth] = 1;
+    get_codes_recursive(node->left, codes, path, depth + 1);
+    /* Правая ветвь — бит 0 */
+    path[depth] = 0;
+    get_codes_recursive(node->right, codes, path, depth + 1);
+}
+
+void get_codes_of_symbols(huffman_code codes[], huffman_node *root) {
+    /* Инициализируем все коды нулями */
+    for (int i = 0; i < 256; i++) {
+        for (int j = 0; j < 16; j++) {
+            codes[i].code[j] = 0;
+        }
+        codes[i].length_of_code = 0;
+    }
+
+    uint8_t path[256]; /* Временный буфер для пути (максимальная глубина 255) */
+    get_codes_recursive(root, codes, path, 0);
+}
 
 int main(){
     char* name_of_file = "one letter.txt";//"input";
