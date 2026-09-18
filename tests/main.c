@@ -224,12 +224,10 @@ huffman_node* build_huffman_tree(uint8_t pointers_for_numbers_in_hash_table_for_
     return huffman_nodes[0];
 }
 
-typedef struct{
-    uint8_t code[16];
-    uint8_t length_of_code;
-} huffman_code;
-
-
+/*
+ * модифицирует массив codes, так, что здесь символ становится индексом, а в структуре huffman_code, который находится по данному индексу, записывается код по принципу что если ветвь идёт налево, то 1, иначе 0.
+*/
+void get_codes_of_symbols(huffman_code codes[], huffman_node *root);
 
 int main(){
     char* name_of_file = "one letter.txt";//"input";
@@ -279,6 +277,8 @@ int main(){
 
     // начало создания кодов
 
+    huffman_code codes_of_symbols[256];
+
     huffman_node *root = build_huffman_tree(indexes, hash_table_for_frequency_of_symbols, index_of_last_zero);
-    get_codes_of_symbols(root);
+    get_codes_of_symbols(codes_of_symbols, root);
 }
