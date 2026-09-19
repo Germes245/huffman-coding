@@ -227,20 +227,26 @@ huffman_node* build_huffman_tree(uint8_t pointers_for_numbers_in_hash_table_for_
 /**
  * @brief Заполняет массив кодов Хаффмана для всех символов дерева.
  *
- * Функция обходит дерево Хаффмана от корня к листьям, накапливая биты кода.
- * При переходе по левой ветви добавляется бит 1, по правой — 0.
- * Для каждого листа в массив codes по индексу символа записывается
- * упакованная последовательность битов и её длина.
+ * Функция обходит дерево Хаффмана от корня к листьям без рекурсии,
+ * используя ручной стек, накапливая путь в буфере path[].
  *
- * @param[out] codes Массив размером 256, где codes[symbol] содержит код для символа.
- * @param[in] root Корень дерева Хаффмана.
+ * Каждый бит кода «растягивается» в целый байт:
+ *   - ветвь налево  → 255 (0xFF), что играет роль бита 1;
+ *   - ветвь направо →   0 (0x00), что играет роль бита 0.
  *
- * @note Биты упаковываются в байты: первый бит кода записывается в старший бит
- *       code[0], второй — в следующий бит и т.д. Максимальная длина кода
- *       ограничена размером массива code (16 байт = 128 бит).
+ * Байты записываются в code[0], code[1], ... в порядке обхода
+ * (первое ответвление от корня — в code[0], второе — в code[1], ...).
+ *
+ * @param[out] codes Массив размером 256, где codes[symbol] содержит код
+ *                   для символа symbol.
+ * @param[in]  root  Корень дерева Хаффмана.
+ *
+ * @note Максимальная длина кода ограничена размером массива code[16],
+ *       т.е. 16 «растянутыми» битами. Если глубина листа больше 16,
+ *       лишние биты не сохраняются, а length_of_code обрезается до 16.
  */
 void get_codes_of_symbols(huffman_code codes[], huffman_node *root) {
-    /* Инициализируем все коды нулями */
+    /* Инициализация: обнуляем все коды */
     for (int i = 0; i < 256; i++) {
         for (int j = 0; j < 16; j++) {
             codes[i].code[j] = 0;
@@ -252,19 +258,23 @@ void get_codes_of_symbols(huffman_code codes[], huffman_node *root) {
         return;
     }
 
-    /* Кадр стека для итеративного обхода */
+    /* Кадр ручного стека для итеративного обхода в глубину */
     typedef struct {
-        huffman_node *node;   /* текущий узел */
-        uint8_t depth;        /* глубина узла (длина префикса) */
-        uint8_t state;        /* 0 — только вошли, 1 — левый обработан, 2 — правый обработан */
+        huffman_node *node;  /* текущий узел */
+        uint8_t depth;       /* глубина узла (длина префикса) */
+        uint8_t state;       /* 0 — вошли, 1 — левый обработан, 2 — правый обработан */
     } dfs_frame;
 
-    uint8_t path[256];        /* временный буфер для битов пути (макс. глубина 255) */
-    dfs_frame stack[256];     /* стек для обхода (макс. глубина 255) */
+    /* Буфер пути: 255 — налево, 0 — направо.
+       Максимальная глубина бинарного дерева с 256 листьями — 255. */
+    uint8_t path[256];
+
+    /* Стек обхода: в худшем случае 256 кадров (корень + 255 уровней). */
+    dfs_frame stack[256];
     int top = 0;
 
-    /* Помещаем корень в стек */
-    stack[top].node = root;
+    /* Кладём корень */
+    stack[top].node  = root;
     stack[top].depth = 0;
     stack[top].state = 0;
     top++;
@@ -277,35 +287,36 @@ void get_codes_of_symbols(huffman_code codes[], huffman_node *root) {
         if (frame->state == 0) {
             /* Первое посещение узла */
             if (node->is_leaf) {
-                /* Записываем код для листа */
+                /* Копируем накопленный путь в код символа.
+                   Каждый элемент path[i] — уже целый байт: 255 или 0.
+                   Обрезаем по размеру code[16]. */
                 huffman_code *code = &codes[node->symbol];
-                code->length_of_code = depth;
-                for (uint8_t i = 0; i < depth; i++) {
-                    if (path[i] == 1) {
-                        code->code[i / 8] |= (1 << (7 - (i % 8)));
-                    }
+                uint8_t n = (depth < 16) ? depth : 16;
+                code->length_of_code = n;
+                for (uint8_t i = 0; i < n; i++) {
+                    code->code[i] = path[i];
                 }
-                /* Лист не имеет потомков — сразу удаляем из стека */
+                /* Лист — потомков нет, сразу снимаем со стека */
                 top--;
             } else {
-                /* Идём в левый потомок (бит 1) */
-                path[depth] = 1;
-                stack[top].node = node->left;
+                /* Спуск влево: бит = 1 = 255 */
+                path[depth] = 255;
+                stack[top].node  = node->left;
                 stack[top].depth = depth + 1;
                 stack[top].state = 0;
                 top++;
-                frame->state = 1; /* при следующем возврате левый уже обработан */
+                frame->state = 1;  /* при возврате пойдём вправо */
             }
         } else if (frame->state == 1) {
-            /* Левый потомок обработан, идём в правый (бит 0) */
+            /* Левый потомок обработан — идём в правый: бит = 0 */
             path[depth] = 0;
-            stack[top].node = node->right;
+            stack[top].node  = node->right;
             stack[top].depth = depth + 1;
             stack[top].state = 0;
             top++;
-            frame->state = 2; /* при следующем возврате правый уже обработан */
+            frame->state = 2;  /* при возврате узел уже полностью обработан */
         } else {
-            /* Оба потомка обработаны — удаляем узел из стека */
+            /* Оба потомка обработаны — снимаем узел со стека */
             top--;
         }
     }
@@ -363,4 +374,15 @@ int main(){
 
     huffman_node *root = build_huffman_tree(indexes, hash_table_for_frequency_of_symbols, index_of_last_zero);
     get_codes_of_symbols(codes_of_symbols, root);
+
+    for (uint16_t i = 0; i < 256; i++) {
+        huffman_code current_el = codes_of_symbols[i];
+        if(current_el.length_of_code){
+            printf("length: %d, index: %d\n", current_el.length_of_code, i);
+            for(uint8_t i = 0; i < current_el.length_of_code; i++){
+                printf("%d ", current_el.code[indexes[i]]);
+            }
+            putchar('\n');
+        }
+    }
 }
