@@ -5,9 +5,6 @@
  * В файле реализованы вспомогательные функции для кодирования Хаффмана:
  * подсчёт частот символов, сортировка индексов по частотам и сборка дерева.
  */
-
-//#include <cstddef>
-#include <cstddef>
 #include <stdint.h>
 #include <stddef.h>
 #include <stdio.h>
@@ -361,7 +358,12 @@ void get_codes_of_symbols(huffman_code codes[], huffman_node *root) {
     }
 }
 
-void code_text(uint8_t input_buffer[], size_t size_of_input_buffer);
+/*
+ * делает окончательное кодирование символов. только уже на уровне битов берёт символ, чей размер равен 8 битов естественно на один байт, подменяет его на символ из массива codes_of_symbols. размер массива codes_of_symbols всегда равен 256 байтов. затем из структуры huffman_code берёт поле code, и подменяет исходный символ на последовательность битов, описаную в поле code, структуры huffman_code.
+ * @param input_buffer -- массив с исходными данными
+ * @param size_of_input_buffer -- длина ис
+*/
+void code_text(uint8_t input_buffer[], size_t size_of_input_buffer, huffman_code codes_of_symbols[], uint8_t output_buffer[]);
 
 int main(){
     char* name_of_file = "one letter.txt";//"input";
@@ -429,5 +431,6 @@ int main(){
         }
     }
 
-    //code_text()
+    uint8_t output_buffer[length_of_buffer];
+    code_text(buffer, length_of_buffer, output_buffer);
 }
