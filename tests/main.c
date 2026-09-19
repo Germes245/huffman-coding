@@ -7,6 +7,7 @@
  */
 
 //#include <cstddef>
+#include <cstddef>
 #include <stdint.h>
 #include <stddef.h>
 #include <stdio.h>
@@ -194,15 +195,14 @@ huffman_node* build_huffman_tree(uint8_t pointers_for_numbers_in_hash_table_for_
             stack_for_tree[score_of_elements_in_stack] = huffman_nodes[length_of_last_layer-1];
             score_of_elements_in_stack++;
         }
-        for (uint16_t i = 0; i < length_of_last_layer;) {
+        for (uint16_t i = 0; i < length_of_current_layer; i++) {
             huffman_node *node = xmalloc(sizeof(huffman_node));
             node->is_leaf = NO;
-            node->left = huffman_nodes[i];
-            i++;
-            node->right = huffman_nodes[i];
-            i++;
-            huffman_nodes[j] = node;
+            node->left = huffman_nodes[j];
             j++;
+            node->right = huffman_nodes[j];
+            j++;
+            huffman_nodes[i] = node;
         }
         length_of_last_layer = length_of_current_layer;
         length_of_current_layer /= 2;
@@ -225,10 +225,48 @@ huffman_node* build_huffman_tree(uint8_t pointers_for_numbers_in_hash_table_for_
     return huffman_nodes[0];
 }
 
-/*
- * очищает память от дерева
-*/
-void free_huffman_tree(huffman_node *root);
+/**
+ * @brief Освобождает память, занятую всеми узлами дерева Хаффмана.
+ *
+ * Функция выполняет итеративный обход дерева (без рекурсии) с использованием
+ * ручного стека. Для каждого узла сначала в стек помещаются его потомки,
+ * а затем сам узел освобождается. Такой порядок гарантирует, что мы не
+ * обратимся к уже освобождённой памяти.
+ *
+ * @param[in] root Корень дерева Хаффмана. Если root == NULL, функция ничего не делает.
+ *
+ * @note Максимальное количество узлов в дереве Хаффмана для 256 символов
+ *       равно 2 * 256 - 1 = 511, поэтому размера стека в 512 элементов
+ *       достаточно для любого корректного дерева.
+ */
+void free_huffman_tree(huffman_node *root) {
+    if (root == NULL) {
+        return;
+    }
+
+    /* Ручной стек указателей на узлы. 512 — с запасом на 511 узлов. */
+    huffman_node *stack[512];
+    int top = 0;
+
+    /* Кладём корень */
+    stack[top++] = root;
+
+    while (top > 0) {
+        /* Извлекаем узел из стека */
+        huffman_node *node = stack[--top];
+
+        /* Сначала помещаем потомков, чтобы обработать их позже */
+        if (node->left != NULL) {
+            stack[top++] = node->left;
+        }
+        if (node->right != NULL) {
+            stack[top++] = node->right;
+        }
+
+        /* Теперь можно безопасно освободить текущий узел */
+        free(node);
+    }
+}
 
 /**
  * @brief Заполняет массив кодов Хаффмана для всех символов дерева.
@@ -323,7 +361,7 @@ void get_codes_of_symbols(huffman_code codes[], huffman_node *root) {
     }
 }
 
-void code_text(uint8_t buffer[], )
+void code_text(uint8_t input_buffer[], size_t size_of_input_buffer);
 
 int main(){
     char* name_of_file = "one letter.txt";//"input";
@@ -331,6 +369,7 @@ int main(){
     // чтение файла
 
     struct stat file_info;
+    file_info.st_size;
     if(stat(name_of_file, &file_info) && length_of_buffer == 0){
         perror("Error reading file");
         return 1;
@@ -377,6 +416,7 @@ int main(){
 
     huffman_node *root = build_huffman_tree(indexes, hash_table_for_frequency_of_symbols, index_of_last_zero);
     get_codes_of_symbols(codes_of_symbols, root);
+    free_huffman_tree(root);
 
     for (uint16_t i = 0; i < 256; i++) {
         huffman_code current_el = codes_of_symbols[i];
@@ -389,5 +429,5 @@ int main(){
         }
     }
 
-    code_text()
+    //code_text()
 }
