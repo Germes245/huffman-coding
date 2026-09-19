@@ -8,7 +8,6 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <stdio.h>
-//#include <bool.h>
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <string.h>
@@ -16,17 +15,11 @@
 /**
  * @def length_of_buffer
  * @brief Длина входного файла в байтах.
- *
- * Макрос обращается к полю st_size структуры file_info.
- * Предполагается, что переменная file_info объявлена в области видимости.
  */
 #define length_of_buffer file_info.st_size
 
 /**
  * @brief Выделяет память заданного размера или завершает программу при ошибке.
- *
- * @param size Количество байт для выделения.
- * @return Указатель на выделенный блок памяти.
  */
 void *xmalloc(size_t size) {
     void *ptr = malloc(size);
@@ -36,18 +29,15 @@ void *xmalloc(size_t size) {
     }
     return ptr;
 }
-
 // HE -- Huffman Encoding
 
 /**
  * @brief Подсчитывает частоты появления байтов во входном массиве.
- *
- * @param[out] hash_table_for_frequency_of_symbols Массив из 256 счётчиков частот.
- * @param[in] array_of_symbols Входной массив байтов.
- * @param[in] length_of_array_of_symbols Количество байтов в массиве.
  */
-void HE_count_frequency(uint64_t *hash_table_for_frequency_of_symbols, uint8_t *array_of_symbols, size_t length_of_array_of_symbols){
-    for(size_t i = 0; i < length_of_array_of_symbols; i++){
+void HE_count_frequency(uint64_t *hash_table_for_frequency_of_symbols,
+                        uint8_t *array_of_symbols,
+                        size_t length_of_array_of_symbols) {
+    for (size_t i = 0; i < length_of_array_of_symbols; i++) {
         hash_table_for_frequency_of_symbols[array_of_symbols[i]]++;
     }
 }
@@ -57,49 +47,61 @@ void HE_count_frequency(uint64_t *hash_table_for_frequency_of_symbols, uint8_t *
  *
  * @param[in,out] indexes Массив индексов 0..255, который сортируется по частотам.
  * @param[in] hash_table_for_frequency_of_symbols Таблица частот символов.
- * @return Индекс последнего нулевого элемента в отсортированном массиве.
  *
- * @note Переменная index_of_last_zero обновляется только при обмене элементов,
- *       поэтому в некоторых случаях её значение требует дополнительной проверки.
+ * @return Индекс последнего нулевого элемента в отсортированном массиве,
+ *         либо -1, если ни у одного символа частота не равна нулю.
+ *
+ * @note После сортировки все символы с нулевой частотой оказываются в начале
+ *       массива, поэтому достаточно найти последний индекс, у которого частота
+ *       равна нулю, и остановиться при первом ненулевом.
  */
-uint8_t HE_sort_indexes(uint8_t indexes[], uint64_t hash_table_for_frequency_of_symbols[]){
-    uint8_t index_of_last_zero;
-    for(size_t i = 0; i < 256; i++){
-        for(size_t j = 0; j < 256-i-1; j++){ // возможно что последний нуль будет на 244 индексе
-            if(hash_table_for_frequency_of_symbols[indexes[j]] > hash_table_for_frequency_of_symbols[indexes[j+1]]){
-                index_of_last_zero = j;
-                //printf("j = %ld, left = %ld, right = %ld\n", j, hash_table_for_frequency_of_symbols[indexes[j]], hash_table_for_frequency_of_symbols[indexes[j+1]]);
-                uint8_t temp = indexes[j+1];
-                indexes[j+1] = indexes[j];
+int16_t HE_sort_indexes(uint8_t indexes[],
+                        uint64_t hash_table_for_frequency_of_symbols[]) {
+    /* Пузырьковая сортировка индексов по возрастанию частоты. */
+    for (size_t i = 0; i < 256; i++) {
+        for (size_t j = 0; j < 256 - i - 1; j++) {
+            if (hash_table_for_frequency_of_symbols[indexes[j]] >
+                hash_table_for_frequency_of_symbols[indexes[j + 1]]) {
+                uint8_t temp = indexes[j + 1];
+                indexes[j + 1] = indexes[j];
                 indexes[j] = temp;
             }
         }
-        //getchar();
+    }
+
+    /* После сортировки нули стоят в начале. Ищем последний нуль. */
+    int16_t index_of_last_zero = -1;
+    for (int i = 0; i < 256; i++) {
+        if (hash_table_for_frequency_of_symbols[indexes[i]] == 0) {
+            index_of_last_zero = (int16_t)i;
+        } else {
+            break;  /* Дальше нулей быть не может — массив отсортирован. */
+        }
     }
     return index_of_last_zero;
 }
 
 /*
- * дерево строится так что в *left указывается текущий лист, а в *rigth указывается следующая ветвь листов
- * можно представить так:
-(A)    (B)   (C)    (D)   (E)   (F)
-  \    /       \    /      \    /
-   (AB)         (CD)        (EF)   
-       \       /           /
-        (ABCD)            /
-           \             /
-            \           /
-             \         /
-              \       /
-               (ABCDEF)
-ФИСВ
-*/
+ * Дерево строится так, что в *left указывается текущий лист, а в *right
+ * указывается следующая ветвь листов. Можно представить так:
+ *
+ * (A)    (B)   (C)    (D)   (E)   (F)
+ *   \    /       \    /      \    /
+ *    (AB)         (CD)        (EF)
+ *        \       /           /
+ *         (ABCD)            /
+ *            \             /
+ *             \           /
+ *              \         /
+ *               \       /
+ *                (ABCDEF)
+ */
 
 /**
  * @enum is_leaf_
  * @brief Признак того, является ли узел дерева листом.
  */
-enum is_leaf_{
+enum is_leaf_ {
     NO,  ///< Узел не является листом.
     YES  ///< Узел является листом.
 };
@@ -109,32 +111,30 @@ enum is_leaf_{
  * @brief Узел дерева Хаффмана.
  */
 typedef struct huffman_node {
-    uint8_t symbol;           ///< Символ (если узел — лист).
-    uint64_t frequency;       ///< Частота (вес) узла.
-    struct huffman_node *left;///< Левый потомок.
+    uint8_t symbol;            ///< Символ (если узел — лист).
+    uint64_t frequency;        ///< Частота (вес) узла.
+    struct huffman_node *left; ///< Левый потомок.
     struct huffman_node *right;///< Правый потомок.
-    enum is_leaf_ is_leaf;    ///< Признак листа.
+    enum is_leaf_ is_leaf;     ///< Признак листа.
 } huffman_node;
 
 /**
  * @struct huffman_code
  * @brief Код Хаффмана для символа.
  */
-typedef struct{
-    uint8_t code[16];         ///< Битовая последовательность кода.
-    uint8_t length_of_code;   ///< Длина кода в битах.
+typedef struct {
+    uint8_t code[16];       ///< Битовая последовательность кода.
+    uint8_t length_of_code; ///< Длина кода в битах.
 } huffman_code;
 
 /**
  * @brief Рекурсивно выводит узел дерева Хаффмана в stdout.
- *
- * @param node Узел для вывода.
  */
-void print_node(huffman_node* node){
-    if(node->is_leaf){
-        printf("this is a leaf\nfrequency: %d\nsymbol: %d\n", node->frequency, node->symbol);
-    }
-    else{
+void print_node(huffman_node *node) {
+    if (node->is_leaf) {
+        printf("this is a leaf\nfrequency: %lu\nsymbol: %d\n",
+               (unsigned long)node->frequency, node->symbol);
+    } else {
         printf("this is not a leaf\npoints on leafs:\n\nleft:\n\n");
         print_node(node->left);
         printf("\nrigth:\n\n");
@@ -147,112 +147,123 @@ void print_node(huffman_node* node){
 /**
  * @brief Строит дерево Хаффмана по отсортированным частотам символов.
  *
- * @param[in] pointers_for_numbers_in_hash_table_for_frequency_of_symbols Массив индексов символов,
- *            отсортированных по частоте.
+ * @param[in] pointers_for_numbers_in_hash_table_for_frequency_of_symbols
+ *            Массив индексов символов, отсортированных по частоте.
  * @param[in] array_of_frequences Таблица частот символов.
- * @param[in] index_of_last_zero Индекс последнего нулевого элемента в массиве индексов.
- * @return Указатель на корень построенного дерева Хаффмана.
+ * @param[in] index_of_last_zero  Индекс последнего нулевого элемента в массиве
+ *                                индексов, либо -1, если нулей нет.
+ *
+ * @return Указатель на корень построенного дерева Хаффмана,
+ *         либо NULL, если кодировать нечего (нет ни одного ненулевого символа).
  *
  * @note Входной массив индексов должен быть отсортирован по возрастанию частоты.
  */
-huffman_node* build_huffman_tree(uint8_t pointers_for_numbers_in_hash_table_for_frequency_of_symbols[], uint64_t *array_of_frequences, uint16_t index_of_last_zero){
-    uint16_t length = 255 - index_of_last_zero;
+huffman_node *build_huffman_tree(
+        uint8_t pointers_for_numbers_in_hash_table_for_frequency_of_symbols[],
+        uint64_t *array_of_frequences,
+        int16_t index_of_last_zero) {
 
-    // создание листьев
+    /* Если нулей нет вообще — index_of_last_zero == -1; это нормальный случай
+       (все 256 байт встречаются). Если наоборот, все частоты нулевые —
+       index_of_last_zero == 255, кодировать нечего. */
+    if (index_of_last_zero >= 255) {
+        return NULL;
+    }
 
-    huffman_node* huffman_nodes[length];
+    uint16_t length = (uint16_t)(255 - index_of_last_zero);
+    if (length == 0) {
+        return NULL;
+    }
 
-    uint8_t j = index_of_last_zero + 1;
+    /* Создание листьев. */
+    huffman_node *huffman_nodes[length];
+
+    uint16_t j = (uint16_t)(index_of_last_zero + 1);
     for (uint16_t i = 0; i < length; i++) {
         huffman_nodes[i] = xmalloc(sizeof(huffman_node));
-        huffman_nodes[i]->is_leaf = YES;
-        huffman_nodes[i]->symbol = pointers_for_numbers_in_hash_table_for_frequency_of_symbols[j];
+        huffman_nodes[i]->is_leaf   = YES;
+        huffman_nodes[i]->symbol    = pointers_for_numbers_in_hash_table_for_frequency_of_symbols[j];
         huffman_nodes[i]->frequency = array_of_frequences[huffman_nodes[i]->symbol];
+        huffman_nodes[i]->left      = NULL;
+        huffman_nodes[i]->right     = NULL;
         j++;
     }
-    
-    // листья созданы, теперь строится первый слой веток
 
-    if(length == 1){ // если нода одна
+    /* Если лист единственный — он же корень. */
+    if (length == 1) {
         return huffman_nodes[0];
     }
 
-    huffman_node* stack_for_tree[length];
+    /* Стек «отложенных» узлов для нечётных слоёв. */
+    huffman_node *stack_for_tree[length];
     uint16_t score_of_elements_in_stack = 0;
 
-    uint16_t length_of_last_layer = length;
+    uint16_t length_of_last_layer    = length;
     uint16_t length_of_current_layer = length / 2;
 
-    do{
-        printf("last_layer: %d\n", length_of_last_layer);
-        printf("current layer: %d\n", length_of_current_layer);
-        printf("stack pos: %d\n", score_of_elements_in_stack);
-        j = 0;
-        if(length_of_last_layer % 2 == 1){
-            stack_for_tree[score_of_elements_in_stack] = huffman_nodes[length_of_last_layer-1];
+    do {
+        /* Если слой нечётный, последний узел откладываем в стек
+           и исключаем его из спаривания. */
+        uint16_t effective_length = length_of_last_layer;
+        if (length_of_last_layer % 2 == 1) {
+            stack_for_tree[score_of_elements_in_stack] =
+                huffman_nodes[length_of_last_layer - 1];
             score_of_elements_in_stack++;
+            effective_length = length_of_last_layer - 1;
         }
-        for (uint16_t i = 0; i < length_of_current_layer; i++) {
+
+        /* Спариваем соседние узлы: (0,1), (2,3), ... */
+        j = 0;
+        for (uint16_t i = 0; i < effective_length / 2; i++) {
             huffman_node *node = xmalloc(sizeof(huffman_node));
-            node->is_leaf = NO;
-            node->left = huffman_nodes[j];
+            node->is_leaf   = NO;
+            node->symbol    = 0;
+            node->left      = huffman_nodes[j];
             j++;
-            node->right = huffman_nodes[j];
+            node->right     = huffman_nodes[j];
             j++;
+            node->frequency = node->left->frequency + node->right->frequency;
             huffman_nodes[i] = node;
         }
-        length_of_last_layer = length_of_current_layer;
+
+        length_of_last_layer    = length_of_current_layer;
         length_of_current_layer /= 2;
     } while (length_of_last_layer > 1);
 
-    printf("stack pos: %d\n", score_of_elements_in_stack);
-
-    if(score_of_elements_in_stack != 0){
+    /* Прикрепляем отложенные в стек узлы к корню. */
+    if (score_of_elements_in_stack != 0) {
         uint16_t i = score_of_elements_in_stack;
-        do{
+        do {
             i--;
-            printf("shya\n");
             huffman_node *new_root = xmalloc(sizeof(huffman_node));
-            new_root->is_leaf = NO;
-            new_root->left = huffman_nodes[0];
-            new_root->right = stack_for_tree[i];
+            new_root->is_leaf   = NO;
+            new_root->symbol    = 0;
+            new_root->left      = huffman_nodes[0];
+            new_root->right     = stack_for_tree[i];
+            new_root->frequency = new_root->left->frequency + new_root->right->frequency;
             huffman_nodes[0] = new_root;
-        } while(i != 0);
+        } while (i != 0);
     }
+
     return huffman_nodes[0];
 }
 
 /**
  * @brief Освобождает память, занятую всеми узлами дерева Хаффмана.
- *
- * Функция выполняет итеративный обход дерева (без рекурсии) с использованием
- * ручного стека. Для каждого узла сначала в стек помещаются его потомки,
- * а затем сам узел освобождается. Такой порядок гарантирует, что мы не
- * обратимся к уже освобождённой памяти.
- *
- * @param[in] root Корень дерева Хаффмана. Если root == NULL, функция ничего не делает.
- *
- * @note Максимальное количество узлов в дереве Хаффмана для 256 символов
- *       равно 2 * 256 - 1 = 511, поэтому размера стека в 512 элементов
- *       достаточно для любого корректного дерева.
  */
 void free_huffman_tree(huffman_node *root) {
     if (root == NULL) {
         return;
     }
 
-    /* Ручной стек указателей на узлы. 512 — с запасом на 511 узлов. */
     huffman_node *stack[512];
     int top = 0;
 
-    /* Кладём корень */
     stack[top++] = root;
 
     while (top > 0) {
-        /* Извлекаем узел из стека */
         huffman_node *node = stack[--top];
 
-        /* Сначала помещаем потомков, чтобы обработать их позже */
         if (node->left != NULL) {
             stack[top++] = node->left;
         }
@@ -260,7 +271,6 @@ void free_huffman_tree(huffman_node *root) {
             stack[top++] = node->right;
         }
 
-        /* Теперь можно безопасно освободить текущий узел */
         free(node);
     }
 }
@@ -275,41 +285,36 @@ void free_huffman_tree(huffman_node *root) {
  *   - ветвь налево  → 255 (0xFF), что играет роль бита 1;
  *   - ветвь направо →   0 (0x00), что играет роль бита 0.
  *
- * Байты записываются в code[0], code[1], ... в порядке обхода
- * (первое ответвление от корня — в code[0], второе — в code[1], ...).
- *
  * @param[out] codes Массив размером 256, где codes[symbol] содержит код
  *                   для символа symbol.
  * @param[in]  root  Корень дерева Хаффмана.
- *
- * @note Максимальная длина кода ограничена размером массива code[16],
- *       т.е. 16 «растянутыми» битами. Если глубина листа больше 16,
- *       лишние биты не сохраняются, а length_of_code обрезается до 16.
  */
 void get_codes_of_symbols(huffman_code codes[], huffman_node *root) {
-    /* Инициализация: обнуляем все коды */
-    memset(codes, 0, 256*sizeof(huffman_code));
+    memset(codes, 0, 256 * sizeof(huffman_code));
 
     if (root == NULL) {
         return;
     }
 
-    /* Кадр ручного стека для итеративного обхода в глубину */
+    /* Особый случай: дерево состоит из одного листа. Тогда для того, чтобы
+       кодирование/декодирование работали единообразно, выдаём этому символу
+       код длины 1. Бит не важен: договоримся, что это 0. */
+    if (root->is_leaf) {
+        codes[root->symbol].length_of_code = 1;
+        codes[root->symbol].code[0] = 0;
+        return;
+    }
+
     typedef struct {
-        huffman_node *node;  /* текущий узел */
-        uint8_t depth;       /* глубина узла (длина префикса) */
-        uint8_t state;       /* 0 — вошли, 1 — левый обработан, 2 — правый обработан */
+        huffman_node *node;
+        uint8_t depth;
+        uint8_t state; /* 0 — вошли, 1 — левый обработан, 2 — правый обработан */
     } dfs_frame;
 
-    /* Буфер пути: 255 — налево, 0 — направо.
-       Максимальная глубина бинарного дерева с 256 листьями — 255. */
-    uint8_t path[256];
-
-    /* Стек обхода: в худшем случае 256 кадров (корень + 255 уровней). */
+    uint8_t  path[256];
     dfs_frame stack[256];
     int top = 0;
 
-    /* Кладём корень */
     stack[top].node  = root;
     stack[top].depth = 0;
     stack[top].state = 0;
@@ -321,38 +326,30 @@ void get_codes_of_symbols(huffman_code codes[], huffman_node *root) {
         uint8_t depth = frame->depth;
 
         if (frame->state == 0) {
-            /* Первое посещение узла */
             if (node->is_leaf) {
-                /* Копируем накопленный путь в код символа.
-                   Каждый элемент path[i] — уже целый байт: 255 или 0.
-                   Обрезаем по размеру code[16]. */
                 huffman_code *code = &codes[node->symbol];
                 uint8_t n = (depth < 16) ? depth : 16;
                 code->length_of_code = n;
-                for (uint8_t i = 0; i < n; i++) {
-                    code->code[i] = path[i];
+                for (uint8_t k = 0; k < n; k++) {
+                    code->code[k] = path[k];
                 }
-                /* Лист — потомков нет, сразу снимаем со стека */
                 top--;
             } else {
-                /* Спуск влево: бит = 1 = 255 */
-                path[depth] = 255;
+                path[depth] = 255; /* налево — бит 1 */
                 stack[top].node  = node->left;
                 stack[top].depth = depth + 1;
                 stack[top].state = 0;
                 top++;
-                frame->state = 1;  /* при возврате пойдём вправо */
+                frame->state = 1;
             }
         } else if (frame->state == 1) {
-            /* Левый потомок обработан — идём в правый: бит = 0 */
-            path[depth] = 0;
+            path[depth] = 0; /* направо — бит 0 */
             stack[top].node  = node->right;
             stack[top].depth = depth + 1;
             stack[top].state = 0;
             top++;
-            frame->state = 2;  /* при возврате узел уже полностью обработан */
+            frame->state = 2;
         } else {
-            /* Оба потомка обработаны — снимаем узел со стека */
             top--;
         }
     }
@@ -361,143 +358,137 @@ void get_codes_of_symbols(huffman_code codes[], huffman_node *root) {
 /**
  * @brief Кодирует входной буфер с помощью кодов Хаффмана.
  *
- * Для каждого байта входного буфера берётся соответствующая ему структура
- * huffman_code (по индексу символа), а её поле code[] (где каждый элемент —
- * «растянутый» бит: 0x00 = 0, 0xFF = 1) упаковывается в реальные биты
- * выходного буфера.
- *
- * Биты укладываются в байты в порядке MSB-first: первый бит кода
- * записывается в старший бит первого байта, следующий — в следующий бит
- * и т.д. Последний байт при неполной упаковке дополняется нулями справа.
+ * Биты укладываются MSB-first: первый бит кода записывается в старший бит
+ * первого байта. Последний байт при неполной упаковке дополняется нулями.
  *
  * @param[in]  input_buffer        Исходные данные.
  * @param[in]  input_buffer_length Длина входного буфера в байтах.
- * @param[in]  codes_of_symbols    Массив из 256 кодов Хаффмана, полученный
- *                                 после обхода дерева.
+ * @param[in]  codes_of_symbols    Массив из 256 кодов Хаффмана.
  * @param[out] output_buffer       Буфер для упакованных битов. Должен быть
  *                                 достаточно большим: не менее
  *                                 (input_buffer_length * MAX_CODE_LEN + 7) / 8
- *                                 байт, где MAX_CODE_LEN — максимальная длина
- *                                 кода (в нашей реализации не более 16).
- * @param[out] out_total_bits      Количество значимых бит, записанных в
- *                                 output_buffer (без учёта выравнивающих
- *                                 нулей последнего байта). Может быть NULL,
- *                                 если вызывающему это значение не нужно.
+ *                                 байт.
+ * @param[out] out_total_bits      Число значимых бит (без выравнивающего
+ *                                 паддинга). Может быть NULL.
  *
  * @return Количество записанных байт, то есть (total_bits + 7) / 8.
- *         Для пустого входного буфера возвращает 0.
- *
- * @note Если для какого-то символа length_of_code == 0 (символа не было
- *       при построении дерева), его вклад в выходной поток равен нулю.
- *
- * @note Число значимых бит total_bits и число байт output_length связаны
- *       соотношением output_length = (total_bits + 7) / 8. Именно total_bits,
- *       а не output_length, должен использовать декодер, чтобы не «съесть»
- *       выравнивающий паддинг последнего байта.
  */
 size_t code_text(const uint8_t input_buffer[], size_t input_buffer_length,
                  const huffman_code codes_of_symbols[], uint8_t output_buffer[],
                  size_t *out_total_bits) {
-    size_t bit_pos = 0;  /* абсолютная позиция текущего бита в выходном потоке */
+    size_t bit_pos = 0;
 
     for (size_t i = 0; i < input_buffer_length; i++) {
         const huffman_code *c = &codes_of_symbols[input_buffer[i]];
 
         for (uint8_t b = 0; b < c->length_of_code; b++) {
-            size_t byte_idx   = bit_pos >> 3;              /* номер байта в output_buffer */
-            uint8_t bit_index = 7 - (uint8_t)(bit_pos & 7);/* позиция бита внутри байта (MSB-first) */
+            size_t  byte_idx  = bit_pos >> 3;
+            uint8_t bit_index = 7 - (uint8_t)(bit_pos & 7);
             uint8_t mask      = (uint8_t)(1u << bit_index);
 
             if ((bit_pos & 7) == 0) {
-                /* Начало нового байта — перезаписываем его целиком. */
                 output_buffer[byte_idx] = c->code[b] ? mask : 0;
             } else if (c->code[b]) {
-                /* Середина байта, устанавливаем только бит «1». */
                 output_buffer[byte_idx] |= mask;
             }
-            /* Если c->code[b] == 0 и байт уже начат — бит уже 0, ничего не делаем. */
-
             bit_pos++;
         }
     }
 
-    /* Отдаём наружу число значимых бит, если вызывающий его запросил. */
     if (out_total_bits != NULL) {
         *out_total_bits = bit_pos;
     }
-
-    /* Возвращаем число записанных байт (последний байт — частично заполненный). */
     return (bit_pos + 7) >> 3;
 }
 
-//char* from_number_to_string_of_bin_notation()
+int main(void) {
+    char *name_of_file = "one letter.txt";
 
-int main(){
-    char* name_of_file = "one letter.txt";//"input";
-
-    // чтение файла
-
+    /* Чтение размера файла. */
     struct stat file_info;
-    file_info.st_size;
-    if(stat(name_of_file, &file_info) && length_of_buffer == 0){
-        perror("Error reading file");
+    if (stat(name_of_file, &file_info) != 0) {
+        perror("stat");
         return 1;
     }
 
+    /* Пустой файл кодировать нечем. */
+    if (length_of_buffer == 0) {
+        fprintf(stderr, "Файл пуст, кодировать нечего\n");
+        return 1;
+    }
+
+    /* Открытие файла и чтение данных. */
     FILE *file = fopen(name_of_file, "rb");
-    if(!file){
-        perror("ошибка открытия файла\n");
+    if (!file) {
+        perror("fopen");
         return 1;
     }
     uint8_t buffer[length_of_buffer];
-    fread(buffer, length_of_buffer, 1, file);
+    if (fread(buffer, 1, length_of_buffer, file) != (size_t)length_of_buffer) {
+        fprintf(stderr, "Не удалось прочитать весь файл\n");
+        fclose(file);
+        return 1;
+    }
     fclose(file);
 
-    // конец чтения файла
-
-    // подсчёт частотности символов
-    uint64_t hash_table_for_frequency_of_symbols[256] = {0}; // символы здесь это числа в одном байте данных, которые бывают от 0 до 2^8 - 1 включительно
+    /* Подсчёт частот. */
+    uint64_t hash_table_for_frequency_of_symbols[256] = {0};
     HE_count_frequency(hash_table_for_frequency_of_symbols, buffer, length_of_buffer);
 
-    /*for(size_t i = 0; i < 255; i++){
-        printf("%d: %d\n", i, hash_table_for_frequency_of_symbols[i]);
-    }*/
-
-    uint8_t indexes[256]; // массив индексов, которые указывают адресс числа в массиве hash_table_for_frequency_of_symbols
-    uint8_t i = 0;
-
-    while(1){
-        indexes[i] = i;
-        if(i == 255) break;
-        i++;
+    /* Начальный массив индексов 0..255. */
+    uint8_t indexes[256];
+    for (int k = 0; k < 256; k++) {
+        indexes[k] = (uint8_t)k;
     }
 
-    uint16_t index_of_last_zero = HE_sort_indexes(indexes, hash_table_for_frequency_of_symbols);
+    int16_t index_of_last_zero = HE_sort_indexes(indexes, hash_table_for_frequency_of_symbols);
     printf("index_of_last_zero: %d\n", index_of_last_zero);
 
-    for(size_t i = index_of_last_zero; i < 256; i++){
-        printf("i = %d, in index array: %d, value = %ld\n", i, indexes[i], hash_table_for_frequency_of_symbols[indexes[i]]);
+    for (int k = (index_of_last_zero < 0 ? 0 : index_of_last_zero); k < 256; k++) {
+        printf("i = %d, in index array: %d, value = %lu\n",
+               k, indexes[k],
+               (unsigned long)hash_table_for_frequency_of_symbols[indexes[k]]);
     }
 
-    // начало создания кодов
-
+    /* Построение дерева и кодов. */
     huffman_code codes_of_symbols[256];
+    huffman_node *root = build_huffman_tree(indexes,
+                                            hash_table_for_frequency_of_symbols,
+                                            index_of_last_zero);
+    if (root == NULL) {
+        fprintf(stderr, "Не удалось построить дерево Хаффмана\n");
+        return 1;
+    }
 
-    huffman_node *root = build_huffman_tree(indexes, hash_table_for_frequency_of_symbols, index_of_last_zero);
     get_codes_of_symbols(codes_of_symbols, root);
     free_huffman_tree(root);
 
-    for (uint16_t i = 0; i < 256; i++) {
-        huffman_code current_el = codes_of_symbols[i];
-        if(current_el.length_of_code){
-            printf("length: %d, index: %d\n", current_el.length_of_code, i);
-            for(uint8_t i = 0; i < current_el.length_of_code; i++){
-                printf("%d ", current_el.code[indexes[i]]);
+    /* Печать кодов символов (для отладки). */
+    for (int k = 0; k < 256; k++) {
+        huffman_code current_el = codes_of_symbols[k];
+        if (current_el.length_of_code) {
+            printf("symbol %d (0x%02X), length %d: ",
+                   k, k, current_el.length_of_code);
+            for (uint8_t b = 0; b < current_el.length_of_code; b++) {
+                printf("%d", current_el.code[b] ? 1 : 0);
             }
             putchar('\n');
         }
     }
 
-    uint8_t output_buffer[length_of_buffer];
-    size_t length = code_text(buffer, length_of_buffer, codes_of_symbols, output_buffer);
+    /* Кодирование. Худший случай — 16 «растянутых» битов на символ,
+       то есть 2 байта на входной байт. Оставляем запас +1. */
+    size_t output_capacity = 2 * (size_t)length_of_buffer + 1;
+    uint8_t *output_buffer = xmalloc(output_capacity);
+
+    size_t total_bits = 0;
+    size_t output_length = code_text(buffer, length_of_buffer,
+                                     codes_of_symbols,
+                                     output_buffer, &total_bits);
+
+    printf("Закодировано: %zu байт → %zu байт (%zu значимых бит)\n",
+           (size_t)length_of_buffer, output_length, total_bits);
+
+    free(output_buffer);
+    return 0;
 }
