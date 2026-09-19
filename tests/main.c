@@ -13,6 +13,7 @@
 //#include <bool.h>
 #include <stdlib.h>
 #include <sys/stat.h>
+#include <string.h>
 
 /**
  * @def length_of_buffer
@@ -224,6 +225,11 @@ huffman_node* build_huffman_tree(uint8_t pointers_for_numbers_in_hash_table_for_
     return huffman_nodes[0];
 }
 
+/*
+ * очищает память от дерева
+*/
+void free_huffman_tree(huffman_node *root);
+
 /**
  * @brief Заполняет массив кодов Хаффмана для всех символов дерева.
  *
@@ -247,12 +253,7 @@ huffman_node* build_huffman_tree(uint8_t pointers_for_numbers_in_hash_table_for_
  */
 void get_codes_of_symbols(huffman_code codes[], huffman_node *root) {
     /* Инициализация: обнуляем все коды */
-    for (int i = 0; i < 256; i++) {
-        for (int j = 0; j < 16; j++) {
-            codes[i].code[j] = 0;
-        }
-        codes[i].length_of_code = 0;
-    }
+    memset(codes, 0, 256*sizeof(huffman_code));
 
     if (root == NULL) {
         return;
@@ -322,6 +323,8 @@ void get_codes_of_symbols(huffman_code codes[], huffman_node *root) {
     }
 }
 
+void code_text(uint8_t buffer[], )
+
 int main(){
     char* name_of_file = "one letter.txt";//"input";
 
@@ -385,4 +388,6 @@ int main(){
             putchar('\n');
         }
     }
+
+    code_text()
 }
