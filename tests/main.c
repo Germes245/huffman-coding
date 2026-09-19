@@ -358,12 +358,63 @@ void get_codes_of_symbols(huffman_code codes[], huffman_node *root) {
     }
 }
 
-/*
- * делает окончательное кодирование символов. только уже на уровне битов берёт символ, чей размер равен 8 битов естественно на один байт, подменяет его на символ из массива codes_of_symbols. размер массива codes_of_symbols всегда равен 256 байтов. затем из структуры huffman_code берёт поле code, и подменяет исходный символ на последовательность битов, описаную в поле code, структуры huffman_code.
- * @param input_buffer -- массив с исходными данными
- * @param size_of_input_buffer -- длина ис
-*/
-void code_text(uint8_t input_buffer[], size_t size_of_input_buffer, huffman_code codes_of_symbols[], uint8_t output_buffer[]);
+/**
+ * @brief Кодирует входной буфер с помощью кодов Хаффмана.
+ *
+ * Для каждого байта входного буфера берётся соответствующая ему структура
+ * huffman_code (по индексу символа), а её поле code[] (где каждый элемент —
+ * «растянутый» бит: 0x00 = 0, 0xFF = 1) упаковывается в реальные биты
+ * выходного буфера.
+ *
+ * Биты укладываются в байты в порядке MSB-first: первый бит кода
+ * записывается в старший бит первого байта, следующий — в следующий бит
+ * и т.д. Последний байт при неполной упаковке дополняется нулями справа.
+ *
+ * @param[in]  input_buffer        Исходные данные.
+ * @param[in]  input_buffer_length Длина входного буфера в байтах.
+ * @param[in]  codes_of_symbols    Массив из 256 кодов Хаффмана, полученный
+ *                                 после обхода дерева.
+ * @param[out] output_buffer       Буфер для упакованных битов. Должен быть
+ *                                 достаточно большим: не менее
+ *                                 (input_buffer_length * MAX_CODE_LEN + 7) / 8
+ *                                 байт, где MAX_CODE_LEN — максимальная длина
+ *                                 кода (в нашей реализации не более 16).
+ *
+ * @return Количество записанных байт (с учётом последнего неполного байта).
+ *
+ * @note Если для какого-то символа length_of_code == 0 (символа не было
+ *       при построении дерева), его вклад в выходной поток равен нулю.
+ */
+size_t code_text(const uint8_t input_buffer[], size_t input_buffer_length,
+                 const huffman_code codes_of_symbols[], uint8_t output_buffer[]) {
+    size_t bit_pos = 0;  /* абсолютная позиция текущего бита в выходном потоке */
+
+    for (size_t i = 0; i < input_buffer_length; i++) {
+        const huffman_code *c = &codes_of_symbols[input_buffer[i]];
+
+        for (uint8_t b = 0; b < c->length_of_code; b++) {
+            size_t byte_idx   = bit_pos >> 3;             /* номер байта в output_buffer */
+            uint8_t bit_index = 7 - (uint8_t)(bit_pos & 7); /* позиция бита внутри байта (MSB-first) */
+            uint8_t mask      = (uint8_t)(1u << bit_index);
+
+            if ((bit_pos & 7) == 0) {
+                /* Начало нового байта — перезаписываем его целиком. */
+                output_buffer[byte_idx] = c->code[b] ? mask : 0;
+            } else if (c->code[b]) {
+                /* Середина байта, устанавливаем только бит «1». */
+                output_buffer[byte_idx] |= mask;
+            }
+            /* Если c->code[b] == 0 и байт уже начат — бит уже 0, ничего не делаем. */
+
+            bit_pos++;
+        }
+    }
+
+    /* Возвращаем число записанных байт (последний байт — частично заполненный). */
+    return (bit_pos + 7) >> 3;
+}
+
+char* from_number_to_string_of_bin_notation()
 
 int main(){
     char* name_of_file = "one letter.txt";//"input";
@@ -432,5 +483,10 @@ int main(){
     }
 
     uint8_t output_buffer[length_of_buffer];
-    code_text(buffer, length_of_buffer, output_buffer);
+    size_t length = code_text(buffer, length_of_buffer, codes_of_symbols, output_buffer);
+    for (size_t i = 0; i < length_of_buffer; i++) {
+        printf("%b ", buffer[i]);
+    }
+    putchar('\n');
+
 }
