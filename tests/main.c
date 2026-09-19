@@ -379,22 +379,33 @@ void get_codes_of_symbols(huffman_code codes[], huffman_node *root) {
  *                                 (input_buffer_length * MAX_CODE_LEN + 7) / 8
  *                                 байт, где MAX_CODE_LEN — максимальная длина
  *                                 кода (в нашей реализации не более 16).
+ * @param[out] out_total_bits      Количество значимых бит, записанных в
+ *                                 output_buffer (без учёта выравнивающих
+ *                                 нулей последнего байта). Может быть NULL,
+ *                                 если вызывающему это значение не нужно.
  *
- * @return Количество записанных байт (с учётом последнего неполного байта).
+ * @return Количество записанных байт, то есть (total_bits + 7) / 8.
+ *         Для пустого входного буфера возвращает 0.
  *
  * @note Если для какого-то символа length_of_code == 0 (символа не было
  *       при построении дерева), его вклад в выходной поток равен нулю.
+ *
+ * @note Число значимых бит total_bits и число байт output_length связаны
+ *       соотношением output_length = (total_bits + 7) / 8. Именно total_bits,
+ *       а не output_length, должен использовать декодер, чтобы не «съесть»
+ *       выравнивающий паддинг последнего байта.
  */
 size_t code_text(const uint8_t input_buffer[], size_t input_buffer_length,
-                 const huffman_code codes_of_symbols[], uint8_t output_buffer[]) {
+                 const huffman_code codes_of_symbols[], uint8_t output_buffer[],
+                 size_t *out_total_bits) {
     size_t bit_pos = 0;  /* абсолютная позиция текущего бита в выходном потоке */
 
     for (size_t i = 0; i < input_buffer_length; i++) {
         const huffman_code *c = &codes_of_symbols[input_buffer[i]];
 
         for (uint8_t b = 0; b < c->length_of_code; b++) {
-            size_t byte_idx   = bit_pos >> 3;             /* номер байта в output_buffer */
-            uint8_t bit_index = 7 - (uint8_t)(bit_pos & 7); /* позиция бита внутри байта (MSB-first) */
+            size_t byte_idx   = bit_pos >> 3;              /* номер байта в output_buffer */
+            uint8_t bit_index = 7 - (uint8_t)(bit_pos & 7);/* позиция бита внутри байта (MSB-first) */
             uint8_t mask      = (uint8_t)(1u << bit_index);
 
             if ((bit_pos & 7) == 0) {
@@ -410,11 +421,16 @@ size_t code_text(const uint8_t input_buffer[], size_t input_buffer_length,
         }
     }
 
+    /* Отдаём наружу число значимых бит, если вызывающий его запросил. */
+    if (out_total_bits != NULL) {
+        *out_total_bits = bit_pos;
+    }
+
     /* Возвращаем число записанных байт (последний байт — частично заполненный). */
     return (bit_pos + 7) >> 3;
 }
 
-char* from_number_to_string_of_bin_notation()
+//char* from_number_to_string_of_bin_notation()
 
 int main(){
     char* name_of_file = "one letter.txt";//"input";
@@ -484,9 +500,4 @@ int main(){
 
     uint8_t output_buffer[length_of_buffer];
     size_t length = code_text(buffer, length_of_buffer, codes_of_symbols, output_buffer);
-    for (size_t i = 0; i < length_of_buffer; i++) {
-        printf("%b ", buffer[i]);
-    }
-    putchar('\n');
-
 }
