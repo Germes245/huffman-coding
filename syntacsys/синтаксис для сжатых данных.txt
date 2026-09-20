@@ -1,0 +1,7 @@
+huffman_codes = magic_number bytes_per_element_in_array_of_frequences array_of_frequences size_in_bits coded_data
+
+magic_number = "HE" ; huffman encoding
+bytes_per_element_in_array_of_frequences = OCTET ; количество байт на один элемент в массиве частот, размер поля -- 1 байт
+array_of_frequences = OCTET ; сам массив частот, его размер в байтах: 256 * bytes_per_element_in_array_of_frequences
+size_in_bits = OCTET ; размер закодированых данных в самой закодированой информации в битах
+coded_data = OCTET
