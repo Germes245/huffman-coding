@@ -1,1 +1,0 @@
-/usr/bin/cc CMakeFiles/huffman_test.dir/tests/main.c.o -o huffman_test  libhuffman-coding.a 

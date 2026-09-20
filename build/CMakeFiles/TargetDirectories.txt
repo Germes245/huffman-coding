@@ -1,5 +1,0 @@
-/home/admin/Desktop/ispytanija/C/math/сжатие/Huffman-compress/build/CMakeFiles/huffman-coding.dir
-/home/admin/Desktop/ispytanija/C/math/сжатие/Huffman-compress/build/CMakeFiles/huffman_test.dir
-/home/admin/Desktop/ispytanija/C/math/сжатие/Huffman-compress/build/CMakeFiles/test.dir
-/home/admin/Desktop/ispytanija/C/math/сжатие/Huffman-compress/build/CMakeFiles/edit_cache.dir
-/home/admin/Desktop/ispytanija/C/math/сжатие/Huffman-compress/build/CMakeFiles/rebuild_cache.dir
