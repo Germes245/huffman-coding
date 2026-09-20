@@ -72,7 +72,7 @@ int main(void) {
     free_huffman_tree(root);
 
     /* Печать кодов символов (для отладки). */
-    for (int k = 0; k < 256; k++) {
+    for (uint16_t k = 0; k < 256; k++) {
         huffman_code current_el = codes_of_symbols[k];
         if (current_el.length_of_code) {
             printf("symbol %d (0x%02X), length %d: ",

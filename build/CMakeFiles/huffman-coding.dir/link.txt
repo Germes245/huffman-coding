@@ -1,0 +1,2 @@
+/usr/bin/ar qc libhuffman-coding.a "CMakeFiles/huffman-coding.dir/src/huffman-coding.c.o"
+/usr/bin/ranlib libhuffman-coding.a
